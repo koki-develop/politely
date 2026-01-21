@@ -1,1 +1,105 @@
 @import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* グラスモーフィズム背景 */
+.glass-bg {
+  background: rgba(24, 24, 27, 0.95);
+}
+
+/* 呼吸するボーダー（Idle状態） */
+@keyframes breathe {
+  0%,
+  100% {
+    border-color: rgba(167, 139, 250, 0.2);
+  }
+  50% {
+    border-color: rgba(167, 139, 250, 0.5);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* 録音中のパルスリング */
+@keyframes pulse-ring {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse-ring-outer {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.1;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-ring-outer {
+  animation: pulse-ring-outer 1.5s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+/* 文字起こし中のウェーブドット */
+@keyframes wave {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-wave {
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+.animate-wave-delay-1 {
+  animation: wave 1.2s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.animate-wave-delay-2 {
+  animation: wave 1.2s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+/* フェードイン */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}

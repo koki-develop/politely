@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onAuthToken: (callback: (token: string) => void) => {
     ipcRenderer.on("auth-token", (_event, token) => callback(token));
   },
+  onResetToIdle: (callback: () => void) => {
+    ipcRenderer.on("reset-to-idle", callback);
+  },
 
   sendTranscriptionComplete: (text: string) => {
     ipcRenderer.send("transcription-complete", text);

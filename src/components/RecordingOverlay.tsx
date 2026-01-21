@@ -8,8 +8,49 @@ type TranscribeResponse = {
 
 type OverlayState = "idle" | "recording" | "transcribing" | "error";
 
-const WINDOW_SIZE_NORMAL = { width: 200, height: 80 };
-const WINDOW_SIZE_ERROR = { width: 280, height: 120 };
+const WINDOW_SIZE_IDLE = { width: 130, height: 32 };
+const WINDOW_SIZE_RECORDING = { width: 120, height: 32 };
+const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 32 };
+const WINDOW_SIZE_ERROR = { width: 200, height: 70 };
+
+// SVG Icons
+const MicIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-violet-400"
+    aria-hidden="true"
+  >
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" x2="12" y1="19" y2="22" />
+  </svg>
+);
+
+const AlertIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-red-400 shrink-0"
+    aria-hidden="true"
+  >
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" x2="12" y1="9" y2="13" />
+    <line x1="12" x2="12.01" y1="17" y2="17" />
+  </svg>
+);
 
 export const RecordingOverlay = () => {
   const {
@@ -29,8 +70,13 @@ export const RecordingOverlay = () => {
     window.electronAPI.onAuthToken((token) => {
       authTokenRef.current = token;
     });
+    window.electronAPI.onResetToIdle(() => {
+      setOverlayState("idle");
+      setError(null);
+    });
     return () => {
       window.electronAPI.removeAllListeners("auth-token");
+      window.electronAPI.removeAllListeners("reset-to-idle");
     };
   }, []);
 
@@ -117,17 +163,14 @@ export const RecordingOverlay = () => {
   }, [recordError]);
 
   useEffect(() => {
-    if (overlayState === "error") {
-      window.electronAPI.setWindowSize(
-        WINDOW_SIZE_ERROR.width,
-        WINDOW_SIZE_ERROR.height,
-      );
-    } else if (overlayState === "recording") {
-      window.electronAPI.setWindowSize(
-        WINDOW_SIZE_NORMAL.width,
-        WINDOW_SIZE_NORMAL.height,
-      );
-    }
+    const sizes = {
+      idle: WINDOW_SIZE_IDLE,
+      recording: WINDOW_SIZE_RECORDING,
+      transcribing: WINDOW_SIZE_TRANSCRIBING,
+      error: WINDOW_SIZE_ERROR,
+    };
+    const size = sizes[overlayState];
+    window.electronAPI.setWindowSize(size.width, size.height);
   }, [overlayState]);
 
   const handleCancel = useCallback(() => {
@@ -144,51 +187,72 @@ export const RecordingOverlay = () => {
     setError(null);
   }, []);
 
-  return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900/90 rounded-xl p-4 select-none [-webkit-app-region:drag]">
-      <div className="flex items-center gap-2 mb-2">
-        {overlayState === "recording" && (
-          <>
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-white text-sm font-medium">Recording...</span>
-          </>
-        )}
-        {overlayState === "transcribing" && (
-          <>
-            <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
-            <span className="text-white text-sm font-medium">
-              Transcribing...
-            </span>
-          </>
-        )}
-        {overlayState === "error" && error && (
-          <div className="max-h-16 overflow-y-auto [-webkit-app-region:no-drag]">
-            <span className="text-red-400 text-xs text-center break-all">
-              {error}
-            </span>
-          </div>
-        )}
+  // Idle State
+  if (overlayState === "idle") {
+    return (
+      <div className="w-full h-full flex items-center justify-center gap-2 glass-bg rounded-full border border-white/10 animate-breathe select-none [-webkit-app-region:drag]">
+        <MicIcon />
+        <span className="text-zinc-500 text-[10px]">⌘⇧Space</span>
       </div>
+    );
+  }
 
-      {overlayState === "recording" && (
+  // Recording State
+  if (overlayState === "recording") {
+    return (
+      <div className="w-full h-full flex items-center justify-center gap-3 glass-bg rounded-full border border-red-500/30 select-none [-webkit-app-region:drag] animate-fade-in">
+        {/* Pulse Ring */}
+        <div className="relative flex items-center justify-center">
+          <div className="absolute w-4 h-4 rounded-full bg-gradient-to-r from-red-500/40 to-orange-500/40 animate-pulse-ring" />
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500" />
+        </div>
         <button
           type="button"
           onClick={handleCancel}
-          className="text-gray-400 hover:text-white text-xs underline [-webkit-app-region:no-drag]"
+          className="text-zinc-500 hover:text-white text-[10px] transition-colors [-webkit-app-region:no-drag]"
         >
           Cancel
         </button>
-      )}
+      </div>
+    );
+  }
 
-      {overlayState === "error" && (
+  // Transcribing State
+  if (overlayState === "transcribing") {
+    return (
+      <div className="w-full h-full flex items-center justify-center glass-bg rounded-full border border-amber-500/30 select-none [-webkit-app-region:drag] animate-fade-in">
+        {/* Wave Dots */}
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave" />
+          <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave-delay-1" />
+          <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave-delay-2" />
+        </div>
+      </div>
+    );
+  }
+
+  // Error State
+  if (overlayState === "error" && error) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center glass-bg rounded-full border border-red-500/40 px-3 py-2 select-none [-webkit-app-region:drag] animate-fade-in">
+        <div className="flex items-center gap-2">
+          <AlertIcon />
+          <div className="max-h-8 overflow-y-auto [-webkit-app-region:no-drag]">
+            <span className="text-red-400 text-[10px] break-all block">
+              {error}
+            </span>
+          </div>
+        </div>
         <button
           type="button"
           onClick={handleDismissError}
-          className="text-gray-400 hover:text-white text-xs underline [-webkit-app-region:no-drag]"
+          className="text-zinc-500 hover:text-white text-[10px] transition-colors [-webkit-app-region:no-drag]"
         >
           Close
         </button>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  return null;
 };

@@ -2,6 +2,7 @@ export interface ElectronAPI {
   onStartRecording: (callback: () => void) => void;
   onStopRecording: (callback: () => void) => void;
   onAuthToken: (callback: (token: string) => void) => void;
+  onResetToIdle: (callback: () => void) => void;
   sendTranscriptionComplete: (text: string) => void;
   sendRecordingCancelled: () => void;
   sendRecordingError: (error: string) => void;

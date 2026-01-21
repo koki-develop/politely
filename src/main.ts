@@ -5,7 +5,6 @@ import {
   createFloatingWindow,
   destroyFloatingWindow,
   getFloatingWindow,
-  hideFloatingWindow,
   resizeFloatingWindow,
   showFloatingWindow,
 } from "./floatingWindow";
@@ -47,11 +46,8 @@ async function handleShortcutPress() {
     case "idle":
       await savePreviousApp();
       appState = "recording";
-      showFloatingWindow();
-      // ウィンドウ表示後、レンダラープロセスの準備完了を待ってから録音開始メッセージを送信
-      setTimeout(() => {
-        floatingWindow.webContents.send("start-recording");
-      }, 100);
+      // ウィンドウは既にIdle状態で表示されているため、直接録音開始メッセージを送信
+      floatingWindow.webContents.send("start-recording");
       break;
 
     case "recording":
@@ -77,11 +73,9 @@ function setupIpcHandlers() {
   ipcMain.on("transcription-complete", async (_event, text: string) => {
     console.log("[Main] Transcription complete:", text);
 
-    hideFloatingWindow();
     appState = "idle";
-
-    // ウィンドウが完全に閉じるのを待ってから、元アプリへのフォーカス切り替えとペーストを実行
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // レンダラー側でIdle状態に戻す（ウィンドウは表示したまま）
+    getFloatingWindow()?.webContents.send("reset-to-idle");
 
     try {
       await pasteText(text);
@@ -92,8 +86,9 @@ function setupIpcHandlers() {
 
   ipcMain.on("recording-cancelled", () => {
     console.log("[Main] Recording cancelled");
-    hideFloatingWindow();
     appState = "idle";
+    // レンダラー側でIdle状態に戻す（ウィンドウは表示したまま）
+    getFloatingWindow()?.webContents.send("reset-to-idle");
   });
 
   ipcMain.on("recording-error", (_event, error: string) => {
@@ -104,8 +99,8 @@ function setupIpcHandlers() {
 
   ipcMain.on("error-dismissed", () => {
     console.log("[Main] Error dismissed");
-    hideFloatingWindow();
     appState = "idle";
+    // エラー dismiss 時もIdle状態に戻す（ウィンドウは表示したまま）
   });
 
   ipcMain.on("set-window-size", (_event, width: number, height: number) => {
@@ -127,9 +122,10 @@ app.on("ready", async () => {
   const preloadPath = path.join(__dirname, "preload.js");
   createFloatingWindow(preloadPath);
 
-  // ウィンドウ読み込み完了後に認証トークンを送信
+  // ウィンドウ読み込み完了後に認証トークンを送信し、Idle状態でウィンドウを表示
   getFloatingWindow()?.webContents.on("did-finish-load", () => {
     getFloatingWindow()?.webContents.send("auth-token", authToken);
+    showFloatingWindow();
   });
 
   setupIpcHandlers();

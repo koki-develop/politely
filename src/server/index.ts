@@ -12,7 +12,16 @@ const openai = new OpenAI();
 app.use(
   "/api/*",
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: (origin) => {
+      if (!origin) return origin;
+      if (
+        origin.startsWith("http://localhost:") ||
+        origin.startsWith("http://127.0.0.1:")
+      ) {
+        return origin;
+      }
+      return null;
+    },
   }),
 );
 

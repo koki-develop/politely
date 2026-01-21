@@ -1,6 +1,18 @@
 import path from "node:path";
-import { app, BrowserWindow } from "electron";
+import { app, ipcMain, Menu, Tray } from "electron";
 import started from "electron-squirrel-startup";
+import {
+  createFloatingWindow,
+  destroyFloatingWindow,
+  getFloatingWindow,
+  hideFloatingWindow,
+  showFloatingWindow,
+} from "./floatingWindow";
+import {
+  registerGlobalShortcut,
+  unregisterAllShortcuts,
+} from "./globalShortcut";
+import { pasteText, savePreviousApp } from "./pasteService";
 import { startServer, stopServer } from "./server";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -8,60 +20,113 @@ if (started) {
   app.quit();
 }
 
-const createWindow = () => {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+let isRecording = false;
+let tray: Tray | null = null;
+
+function createTray() {
+  // 16x16 または 22x22 のアイコンを使用（Template 画像推奨）
+  const iconPath = path.join(__dirname, "../../assets/trayIconTemplate.png");
+  tray = new Tray(iconPath);
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Politely",
+      enabled: false,
     },
+    { type: "separator" },
+    {
+      label: "Quit",
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip("Politely - Voice Input");
+  tray.setContextMenu(contextMenu);
+}
+
+async function handleShortcutPress() {
+  const floatingWindow = getFloatingWindow();
+
+  if (!isRecording) {
+    await savePreviousApp();
+    isRecording = true;
+    showFloatingWindow();
+
+    const window = getFloatingWindow();
+    if (window) {
+      setTimeout(() => {
+        window.webContents.send("start-recording");
+      }, 100);
+    }
+  } else {
+    isRecording = false;
+    if (floatingWindow) {
+      floatingWindow.webContents.send("stop-recording");
+    }
+  }
+}
+
+function setupIpcHandlers() {
+  ipcMain.on("transcription-complete", async (_event, text: string) => {
+    console.log("[Main] Transcription complete:", text);
+
+    hideFloatingWindow();
+    isRecording = false;
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      await pasteText(text);
+    } catch (error) {
+      console.error("[Main] Failed to paste:", error);
+    }
   });
 
-  // and load the index.html of the app.
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-  } else {
-    mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
-    );
-  }
+  ipcMain.on("recording-cancelled", () => {
+    console.log("[Main] Recording cancelled");
+    hideFloatingWindow();
+    isRecording = false;
+  });
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-};
+  ipcMain.on("recording-error", (_event, error: string) => {
+    console.error("[Main] Recording error:", error);
+    hideFloatingWindow();
+    isRecording = false;
+  });
+}
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
+  // macOS: Dock アイコンを隠す
+  if (process.platform === "darwin") {
+    app.dock.hide();
+  }
+
   await startServer(3001);
-  createWindow();
+
+  createTray();
+
+  const preloadPath = path.join(__dirname, "preload.js");
+  createFloatingWindow(preloadPath);
+
+  setupIpcHandlers();
+
+  registerGlobalShortcut(handleShortcutPress);
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+// トレイアプリなのでウィンドウが閉じても終了しない
+app.on("window-all-closed", (e: Event) => {
+  e.preventDefault();
 });
 
-app.on("activate", () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+app.on("will-quit", () => {
+  unregisterAllShortcuts();
 });
 
-// アプリ終了前にサーバーをシャットダウン
 app.on("before-quit", async (event) => {
   event.preventDefault();
+  destroyFloatingWindow();
   await stopServer();
   app.exit(0);
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.

@@ -38,6 +38,11 @@ export function createFloatingWindow(preloadPath: string): BrowserWindow {
     },
   });
 
+  // 全画面アプリの上に表示するための設定
+  floatingWindow.setFullScreenable(false);
+  floatingWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  floatingWindow.setAlwaysOnTop(true, "screen-saver");
+
   if (OVERLAY_WINDOW_VITE_DEV_SERVER_URL) {
     floatingWindow.loadURL(
       `${OVERLAY_WINDOW_VITE_DEV_SERVER_URL}/overlay.html`,

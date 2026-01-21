@@ -44,11 +44,31 @@ bun run make
 - **Renderer Process** (`src/renderer.tsx`): React アプリのエントリーポイント
 - **API Server** (`src/server/index.ts`): Hono ベースの HTTP サーバー（localhost:3001）。メインプロセス内で起動され、レンダラーから fetch で通信
 
+### ディレクトリ構成
+
+```
+src/
+├── main.ts              # Electron メインプロセス
+├── renderer.tsx         # React エントリーポイント
+├── preload.ts           # Preload スクリプト
+├── App.tsx              # React ルートコンポーネント
+├── index.css            # Tailwind CSS
+├── server/              # Hono API サーバー
+│   └── index.ts
+├── hooks/               # カスタムフック
+└── components/          # React コンポーネント
+```
+
 ### Vite 設定
 
 - `vite.main.config.ts` - Main プロセス用
 - `vite.preload.config.ts` - Preload スクリプト用
 - `vite.renderer.config.ts` - Renderer プロセス用（React Compiler + Tailwind CSS）
+
+### セキュリティ方針
+
+- API キーなどの機密情報はメインプロセス（Hono サーバー）側で管理し、レンダラーには露出させない
+- 外部 API 呼び出しは Hono サーバーを経由して行う
 
 ### コードスタイル（Biome）
 

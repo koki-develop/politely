@@ -34,17 +34,6 @@ export const RecordingOverlay = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const handleResetState = () => {
-      setOverlayState("idle");
-      setError(null);
-    };
-    window.electronAPI.onResetState(handleResetState);
-    return () => {
-      window.electronAPI.removeAllListeners("reset-state");
-    };
-  }, []);
-
   const transcribe = useCallback(async (blob: Blob) => {
     setOverlayState("transcribing");
     setError(null);

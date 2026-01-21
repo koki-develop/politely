@@ -25,14 +25,6 @@ export function registerGlobalShortcut(callback: ShortcutCallback): boolean {
   return success;
 }
 
-export function unregisterGlobalShortcut(): void {
-  if (isRegistered) {
-    globalShortcut.unregister(SHORTCUT_ACCELERATOR);
-    isRegistered = false;
-    console.log(`[GlobalShortcut] Unregistered: ${SHORTCUT_ACCELERATOR}`);
-  }
-}
-
 export function unregisterAllShortcuts(): void {
   globalShortcut.unregisterAll();
   isRegistered = false;

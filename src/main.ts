@@ -21,50 +21,36 @@ if (started) {
 }
 
 let isRecording = false;
+
 let tray: Tray | null = null;
 
 function createTray() {
-  // 16x16 または 22x22 のアイコンを使用（Template 画像推奨）
   const iconPath = path.join(__dirname, "../../assets/trayIconTemplate.png");
   tray = new Tray(iconPath);
-
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: "Politely",
-      enabled: false,
-    },
-    { type: "separator" },
-    {
-      label: "Quit",
-      click: () => {
-        app.quit();
-      },
-    },
-  ]);
-
   tray.setToolTip("Politely - Voice Input");
-  tray.setContextMenu(contextMenu);
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: "Politely", enabled: false },
+      { type: "separator" },
+      { label: "Quit", click: () => app.quit() },
+    ]),
+  );
 }
 
 async function handleShortcutPress() {
   const floatingWindow = getFloatingWindow();
+  if (!floatingWindow) return;
 
   if (!isRecording) {
     await savePreviousApp();
     isRecording = true;
     showFloatingWindow();
-
-    const window = getFloatingWindow();
-    if (window) {
-      setTimeout(() => {
-        window.webContents.send("start-recording");
-      }, 100);
-    }
+    setTimeout(() => {
+      floatingWindow.webContents.send("start-recording");
+    }, 100);
   } else {
     isRecording = false;
-    if (floatingWindow) {
-      floatingWindow.webContents.send("stop-recording");
-    }
+    floatingWindow.webContents.send("stop-recording");
   }
 }
 

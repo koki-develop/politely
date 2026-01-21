@@ -1,9 +1,6 @@
 import path from "node:path";
 import { BrowserWindow, screen } from "electron";
 
-declare const OVERLAY_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
-declare const OVERLAY_WINDOW_VITE_NAME: string;
-
 let floatingWindow: BrowserWindow | null = null;
 
 export function createFloatingWindow(preloadPath: string): BrowserWindow {

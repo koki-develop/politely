@@ -6,6 +6,7 @@ import {
   destroyFloatingWindow,
   getFloatingWindow,
   hideFloatingWindow,
+  resizeFloatingWindow,
   showFloatingWindow,
 } from "./floatingWindow";
 import {
@@ -20,7 +21,8 @@ if (started) {
   app.quit();
 }
 
-let isRecording = false;
+type AppState = "idle" | "recording" | "transcribing" | "error";
+let appState: AppState = "idle";
 
 let tray: Tray | null = null;
 
@@ -41,17 +43,33 @@ async function handleShortcutPress() {
   const floatingWindow = getFloatingWindow();
   if (!floatingWindow) return;
 
-  if (!isRecording) {
-    await savePreviousApp();
-    isRecording = true;
-    showFloatingWindow();
-    // ウィンドウ表示後、レンダラープロセスの準備完了を待ってから録音開始メッセージを送信
-    setTimeout(() => {
+  switch (appState) {
+    case "idle":
+      await savePreviousApp();
+      appState = "recording";
+      showFloatingWindow();
+      // ウィンドウ表示後、レンダラープロセスの準備完了を待ってから録音開始メッセージを送信
+      setTimeout(() => {
+        floatingWindow.webContents.send("start-recording");
+      }, 100);
+      break;
+
+    case "recording":
+      appState = "transcribing";
+      floatingWindow.webContents.send("stop-recording");
+      break;
+
+    case "transcribing":
+      // 文字起こし中は何もしない
+      break;
+
+    case "error":
+      // エラー表示中はエラーをクリアして録音を開始
+      await savePreviousApp();
+      appState = "recording";
+      // ウィンドウはすでに表示されているので、直接録音開始メッセージを送信
       floatingWindow.webContents.send("start-recording");
-    }, 100);
-  } else {
-    isRecording = false;
-    floatingWindow.webContents.send("stop-recording");
+      break;
   }
 }
 
@@ -60,7 +78,7 @@ function setupIpcHandlers() {
     console.log("[Main] Transcription complete:", text);
 
     hideFloatingWindow();
-    isRecording = false;
+    appState = "idle";
 
     // ウィンドウが完全に閉じるのを待ってから、元アプリへのフォーカス切り替えとペーストを実行
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -75,13 +93,23 @@ function setupIpcHandlers() {
   ipcMain.on("recording-cancelled", () => {
     console.log("[Main] Recording cancelled");
     hideFloatingWindow();
-    isRecording = false;
+    appState = "idle";
   });
 
   ipcMain.on("recording-error", (_event, error: string) => {
     console.error("[Main] Recording error:", error);
+    // エラー時はウィンドウを閉じず、エラー状態に遷移
+    appState = "error";
+  });
+
+  ipcMain.on("error-dismissed", () => {
+    console.log("[Main] Error dismissed");
     hideFloatingWindow();
-    isRecording = false;
+    appState = "idle";
+  });
+
+  ipcMain.on("set-window-size", (_event, width: number, height: number) => {
+    resizeFloatingWindow(width, height);
   });
 }
 

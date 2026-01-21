@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onAuthToken: (callback: (token: string) => void) => {
     ipcRenderer.on("auth-token", (_event, token) => callback(token));
   },
+  onResetState: (callback: () => void) => {
+    ipcRenderer.on("reset-state", callback);
+  },
   sendTranscriptionComplete: (text: string) => {
     ipcRenderer.send("transcription-complete", text);
   },
@@ -21,6 +24,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   sendRecordingError: (error: string) => {
     ipcRenderer.send("recording-error", error);
+  },
+  sendErrorDismissed: () => {
+    ipcRenderer.send("error-dismissed");
+  },
+  setWindowSize: (width: number, height: number) => {
+    ipcRenderer.send("set-window-size", width, height);
   },
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);

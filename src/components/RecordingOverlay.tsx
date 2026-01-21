@@ -6,7 +6,10 @@ type TranscribeResponse = {
   error?: string;
 };
 
-type OverlayState = "idle" | "recording" | "transcribing";
+type OverlayState = "idle" | "recording" | "transcribing" | "error";
+
+const WINDOW_SIZE_NORMAL = { width: 200, height: 80 };
+const WINDOW_SIZE_ERROR = { width: 280, height: 120 };
 
 export const RecordingOverlay = () => {
   const {
@@ -31,12 +34,24 @@ export const RecordingOverlay = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleResetState = () => {
+      setOverlayState("idle");
+      setError(null);
+    };
+    window.electronAPI.onResetState(handleResetState);
+    return () => {
+      window.electronAPI.removeAllListeners("reset-state");
+    };
+  }, []);
+
   const transcribe = useCallback(async (blob: Blob) => {
     setOverlayState("transcribing");
     setError(null);
 
     if (!authTokenRef.current) {
       setError("Authentication not ready");
+      setOverlayState("error");
       window.electronAPI.sendRecordingError("Authentication not ready");
       return;
     }
@@ -62,12 +77,15 @@ export const RecordingOverlay = () => {
       if (data.text) {
         window.electronAPI.sendTranscriptionComplete(data.text);
       } else {
+        setError("No speech detected");
+        setOverlayState("error");
         window.electronAPI.sendRecordingError("No speech detected");
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Transcription failed";
       setError(errorMessage);
+      setOverlayState("error");
       window.electronAPI.sendRecordingError(errorMessage);
     }
   }, []);
@@ -104,9 +122,24 @@ export const RecordingOverlay = () => {
   useEffect(() => {
     if (recordError) {
       setError(recordError);
+      setOverlayState("error");
       window.electronAPI.sendRecordingError(recordError);
     }
   }, [recordError]);
+
+  useEffect(() => {
+    if (overlayState === "error") {
+      window.electronAPI.setWindowSize(
+        WINDOW_SIZE_ERROR.width,
+        WINDOW_SIZE_ERROR.height,
+      );
+    } else if (overlayState === "recording") {
+      window.electronAPI.setWindowSize(
+        WINDOW_SIZE_NORMAL.width,
+        WINDOW_SIZE_NORMAL.height,
+      );
+    }
+  }, [overlayState]);
 
   const handleCancel = useCallback(() => {
     isCancelledRef.current = true;
@@ -115,6 +148,12 @@ export const RecordingOverlay = () => {
     }
     window.electronAPI.sendRecordingCancelled();
   }, [recorderState, stopRecording]);
+
+  const handleDismissError = useCallback(() => {
+    window.electronAPI.sendErrorDismissed();
+    setOverlayState("idle");
+    setError(null);
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900/90 rounded-xl p-4 select-none [-webkit-app-region:drag]">
@@ -133,16 +172,34 @@ export const RecordingOverlay = () => {
             </span>
           </>
         )}
-        {error && <span className="text-red-400 text-xs">{error}</span>}
+        {overlayState === "error" && error && (
+          <div className="max-h-16 overflow-y-auto [-webkit-app-region:no-drag]">
+            <span className="text-red-400 text-xs text-center break-all">
+              {error}
+            </span>
+          </div>
+        )}
       </div>
 
-      <button
-        type="button"
-        onClick={handleCancel}
-        className="text-gray-400 hover:text-white text-xs underline [-webkit-app-region:no-drag]"
-      >
-        Cancel
-      </button>
+      {overlayState === "recording" && (
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="text-gray-400 hover:text-white text-xs underline [-webkit-app-region:no-drag]"
+        >
+          Cancel
+        </button>
+      )}
+
+      {overlayState === "error" && (
+        <button
+          type="button"
+          onClick={handleDismissError}
+          className="text-gray-400 hover:text-white text-xs underline [-webkit-app-region:no-drag]"
+        >
+          Close
+        </button>
+      )}
     </div>
   );
 };

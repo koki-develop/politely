@@ -16,11 +16,6 @@ app.use(
   }),
 );
 
-// Health check エンドポイント
-app.get("/api/health", (c) => {
-  return c.json({ status: "ok", timestamp: new Date().toISOString() });
-});
-
 // 音声文字起こしエンドポイント
 app.post("/api/transcribe", async (c) => {
   try {

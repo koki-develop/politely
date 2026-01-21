@@ -13,7 +13,7 @@ import {
   unregisterAllShortcuts,
 } from "./globalShortcut";
 import { pasteText, savePreviousApp } from "./pasteService";
-import { startServer, stopServer } from "./server";
+import { generateAuthToken, startServer, stopServer } from "./server";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -89,12 +89,18 @@ app.on("ready", async () => {
     app.dock.hide();
   }
 
+  const authToken = generateAuthToken();
   await startServer(3001);
 
   createTray();
 
   const preloadPath = path.join(__dirname, "preload.js");
   createFloatingWindow(preloadPath);
+
+  // ウィンドウ読み込み完了後に認証トークンを送信
+  getFloatingWindow()?.webContents.on("did-finish-load", () => {
+    getFloatingWindow()?.webContents.send("auth-token", authToken);
+  });
 
   setupIpcHandlers();
 

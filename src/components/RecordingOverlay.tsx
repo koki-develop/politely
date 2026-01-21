@@ -20,10 +20,26 @@ export const RecordingOverlay = () => {
   const [overlayState, setOverlayState] = useState<OverlayState>("idle");
   const [error, setError] = useState<string | null>(null);
   const isCancelledRef = useRef(false);
+  const authTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    window.electronAPI.onAuthToken((token) => {
+      authTokenRef.current = token;
+    });
+    return () => {
+      window.electronAPI.removeAllListeners("auth-token");
+    };
+  }, []);
 
   const transcribe = useCallback(async (blob: Blob) => {
     setOverlayState("transcribing");
     setError(null);
+
+    if (!authTokenRef.current) {
+      setError("Authentication not ready");
+      window.electronAPI.sendRecordingError("Authentication not ready");
+      return;
+    }
 
     try {
       const formData = new FormData();
@@ -32,6 +48,9 @@ export const RecordingOverlay = () => {
       const response = await fetch("http://localhost:3001/api/transcribe", {
         method: "POST",
         body: formData,
+        headers: {
+          "X-Auth-Token": authTokenRef.current,
+        },
       });
 
       const data: TranscribeResponse = await response.json();

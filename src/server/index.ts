@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import type { ServerType } from "@hono/node-server";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
@@ -7,6 +8,13 @@ import OpenAI from "openai";
 const app = new Hono();
 
 const openai = new OpenAI();
+
+let authToken: string | null = null;
+
+export const generateAuthToken = (): string => {
+  authToken = crypto.randomBytes(32).toString("hex");
+  return authToken;
+};
 
 // CORS 設定（開発環境の Vite dev server からのリクエストを許可）
 app.use(
@@ -24,6 +32,15 @@ app.use(
     },
   }),
 );
+
+// トークン認証ミドルウェア
+app.use("/api/*", async (c, next) => {
+  const token = c.req.header("X-Auth-Token");
+  if (!authToken || token !== authToken) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  await next();
+});
 
 // 音声文字起こしエンドポイント
 app.post("/api/transcribe", async (c) => {

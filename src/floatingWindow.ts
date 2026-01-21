@@ -31,6 +31,7 @@ export function createFloatingWindow(preloadPath: string): BrowserWindow {
     focusable: false,
     hasShadow: false,
     show: false,
+    type: "panel",
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -64,7 +65,7 @@ export function createFloatingWindow(preloadPath: string): BrowserWindow {
 }
 
 export function showFloatingWindow(): void {
-  floatingWindow?.show();
+  floatingWindow?.showInactive();
 }
 
 export function hideFloatingWindow(): void {

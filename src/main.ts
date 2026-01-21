@@ -45,6 +45,7 @@ async function handleShortcutPress() {
     await savePreviousApp();
     isRecording = true;
     showFloatingWindow();
+    // ウィンドウ表示後、レンダラープロセスの準備完了を待ってから録音開始メッセージを送信
     setTimeout(() => {
       floatingWindow.webContents.send("start-recording");
     }, 100);
@@ -61,6 +62,7 @@ function setupIpcHandlers() {
     hideFloatingWindow();
     isRecording = false;
 
+    // ウィンドウが完全に閉じるのを待ってから、元アプリへのフォーカス切り替えとペーストを実行
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     try {

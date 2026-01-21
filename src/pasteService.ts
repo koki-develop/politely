@@ -28,6 +28,7 @@ export async function savePreviousApp(): Promise<void> {
 export async function pasteText(text: string): Promise<void> {
   clipboard.writeText(text);
 
+  // クリップボードへの書き込みが OS に反映されるのを待つ
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   if (process.platform === "darwin") {

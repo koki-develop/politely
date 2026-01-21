@@ -110,8 +110,8 @@ app.on("ready", async () => {
 });
 
 // トレイアプリなのでウィンドウが閉じても終了しない
-app.on("window-all-closed", (e: Event) => {
-  e.preventDefault();
+app.on("window-all-closed", () => {
+  // 何もしないことでアプリを終了させない
 });
 
 app.on("will-quit", () => {

@@ -45,6 +45,7 @@ bun run make
 - **Tray Icon**: メニューバーにアイコンを表示、右クリックで終了メニュー
 - **Floating Window**: 録音中に表示されるオーバーレイウィンドウ（focusable: false）
   - `resizeFloatingWindow()` で状態に応じた動的サイズ変更が可能
+  - 全画面アプリの上に表示するため `setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })` と `setAlwaysOnTop(true, "screen-saver")` を設定
 - **Global Shortcut**: `Cmd+Shift+Space` で録音開始/停止
 
 ### Electron プロセス構成

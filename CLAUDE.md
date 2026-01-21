@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Politely は Electron + React + TypeScript で構築されたデスクトップアプリケーションです。
+Politely は Electron + React + TypeScript で構築された macOS 向けトレイアプリケーションです。グローバルホットキーで音声入力を開始し、文字起こしされたテキストをカーソル位置に自動入力します。
 
 ## Tech Stack
 
@@ -15,6 +15,7 @@ Politely は Electron + React + TypeScript で構築されたデスクトップ�
 - **Build Tool**: Vite 6
 - **Package Manager**: Bun
 - **Linter/Formatter**: Biome
+- **Speech-to-Text**: OpenAI Whisper API
 
 ## Commands
 
@@ -37,38 +38,67 @@ bun run make
 
 ## Architecture
 
+### アプリ構成
+
+トレイアプリとして動作し、メインウィンドウは持たない。
+
+- **Tray Icon**: メニューバーにアイコンを表示、右クリックで終了メニュー
+- **Floating Window**: 録音中に表示されるオーバーレイウィンドウ（focusable: false）
+- **Global Shortcut**: `Cmd+Shift+Space` で録音開始/停止
+
 ### Electron プロセス構成
 
-- **Main Process** (`src/main.ts`): Electron のメインプロセス。BrowserWindow の作成、アプリライフサイクル管理、Hono サーバーの起動・停止
-- **Preload Script** (`src/preload.ts`): メインプロセスとレンダラー間のブリッジ（現在は空）
-- **Renderer Process** (`src/renderer.tsx`): React アプリのエントリーポイント
-- **API Server** (`src/server/index.ts`): Hono ベースの HTTP サーバー（localhost:3001）。メインプロセス内で起動され、レンダラーから fetch で通信
+- **Main Process** (`src/main.ts`): トレイアイコン、グローバルショートカット、IPC ハンドラ、Hono サーバーの起動
+- **Preload Script** (`src/preload.ts`): contextBridge による IPC ブリッジ
+- **Overlay Renderer** (`src/overlay.tsx`): フローティングウィンドウの React エントリーポイント
+- **API Server** (`src/server/index.ts`): Hono ベースの HTTP サーバー（localhost:3001）
 
 ### ディレクトリ構成
 
 ```
 src/
-├── main.ts              # Electron メインプロセス
-├── renderer.tsx         # React エントリーポイント
-├── preload.ts           # Preload スクリプト
-├── App.tsx              # React ルートコンポーネント
+├── main.ts              # Electron メインプロセス（トレイアプリ）
+├── overlay.tsx          # オーバーレイウィンドウ React エントリーポイント
+├── preload.ts           # IPC ブリッジ（contextBridge）
 ├── index.css            # Tailwind CSS
+├── floatingWindow.ts    # フローティングウィンドウ管理
+├── globalShortcut.ts    # グローバルショートカット管理
+├── pasteService.ts      # クリップボード + ペースト処理
 ├── server/              # Hono API サーバー
 │   └── index.ts
 ├── hooks/               # カスタムフック
-└── components/          # React コンポーネント
+│   └── useAudioRecorder.ts
+├── components/          # React コンポーネント
+│   └── RecordingOverlay.tsx
+└── types/               # 型定義
+    └── electron.d.ts
 ```
 
 ### Vite 設定
 
 - `vite.main.config.ts` - Main プロセス用
 - `vite.preload.config.ts` - Preload スクリプト用
-- `vite.renderer.config.ts` - Renderer プロセス用（React Compiler + Tailwind CSS）
+- `vite.overlay.config.ts` - Overlay Renderer 用（React Compiler + Tailwind CSS）
+
+### データフロー
+
+1. `Cmd+Shift+Space` → Main Process がアクティブアプリを記録
+2. フローティングウィンドウ表示 → 録音開始
+3. 再度 `Cmd+Shift+Space` → 録音停止
+4. 音声を Hono サーバー経由で Whisper API に送信
+5. 文字起こし結果をクリップボードに書き込み
+6. AppleScript で元のアプリをアクティブにして `Cmd+V` をシミュレート
 
 ### セキュリティ方針
 
 - API キーなどの機密情報はメインプロセス（Hono サーバー）側で管理し、レンダラーには露出させない
 - 外部 API 呼び出しは Hono サーバーを経由して行う
+
+### macOS 固有の要件
+
+- **アクセシビリティ権限**: AppleScript でキー入力をシミュレートするために必要
+- **マイク権限**: 音声録音に必要
+- Dock アイコンは `app.dock.hide()` で非表示にしている
 
 ### コードスタイル（Biome）
 

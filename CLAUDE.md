@@ -10,6 +10,7 @@ Politely は Electron + React + TypeScript で構築されたデスクトップ�
 
 - **Runtime**: Electron 40 (Electron Forge でビルド)
 - **Frontend**: React 19 + React Compiler (babel-plugin-react-compiler)
+- **Backend**: Hono + @hono/node-server (メインプロセス内で起動)
 - **Styling**: Tailwind CSS v4 (Vite plugin)
 - **Build Tool**: Vite 6
 - **Package Manager**: Bun
@@ -38,9 +39,10 @@ bun run make
 
 ### Electron プロセス構成
 
-- **Main Process** (`src/main.ts`): Electron のメインプロセス。BrowserWindow の作成とアプリライフサイクル管理
+- **Main Process** (`src/main.ts`): Electron のメインプロセス。BrowserWindow の作成、アプリライフサイクル管理、Hono サーバーの起動・停止
 - **Preload Script** (`src/preload.ts`): メインプロセスとレンダラー間のブリッジ（現在は空）
 - **Renderer Process** (`src/renderer.tsx`): React アプリのエントリーポイント
+- **API Server** (`src/server/index.ts`): Hono ベースの HTTP サーバー（localhost:3001）。メインプロセス内で起動され、レンダラーから fetch で通信
 
 ### Vite 設定
 
@@ -53,3 +55,4 @@ bun run make
 - インデント: スペース
 - クォート: ダブルクォート
 - インポート自動整理: 有効
+- `useExhaustiveDependencies`: useEffect 内で関数を呼び出す場合、useCallback でメモ化して依存配列に追加すること

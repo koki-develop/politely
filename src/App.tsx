@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { VoiceInput } from "./components/VoiceInput";
 
 type HealthResponse = {
   status: string;
@@ -32,8 +33,11 @@ export const App = () => {
   }, [checkHealth]);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Politely</h1>
+    <div className="p-8 space-y-6">
+      <h1 className="text-2xl font-bold">Politely</h1>
+
+      <VoiceInput />
+
       <div className="border rounded-lg p-4 bg-gray-50">
         <h2 className="text-lg font-semibold mb-2">API Health Check</h2>
         {loading && <p className="text-gray-500">Loading...</p>}

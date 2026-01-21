@@ -43,10 +43,13 @@ bun run make
 トレイアプリとして動作し、メインウィンドウは持たない。
 
 - **Tray Icon**: メニューバーにアイコンを表示、右クリックで終了メニュー
-- **Floating Window**: 録音中に表示されるオーバーレイウィンドウ（focusable: false）
+- **Floating Window**: オーバーレイウィンドウ（focusable: false）
+  - 画面下部に配置（中央ではない）
+  - Idle状態でも常時表示し、録音開始ですぐ使える状態を維持
   - `resizeFloatingWindow()` で状態に応じた動的サイズ変更が可能
   - 全画面アプリの上に表示するため `setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })` と `setAlwaysOnTop(true, "screen-saver")` を設定
   - `type: "panel"` + `showInactive()` で元のアプリのフォーカスを維持（Spotlight のような動作）
+  - 透明ウィンドウで CSS が正しく適用されるよう `html, body, #root { height: 100% }` が必須（`index.css`）
 - **Global Shortcut**: `Cmd+Shift+Space` で録音開始/停止
 
 ### Electron プロセス構成
@@ -114,3 +117,8 @@ src/
 - クォート: ダブルクォート
 - インポート自動整理: 有効
 - `useExhaustiveDependencies`: useEffect 内で関数を呼び出す場合、useCallback でメモ化して依存配列に追加すること
+
+### UIデザイン方針
+
+- **ミニマル**: 状態を表すテキスト（"Ready", "Recording" 等）は不要、アイコンやビジュアルのみで表現
+- **コンパクト**: フローティングウィンドウは極力小さく、邪魔にならないサイズに

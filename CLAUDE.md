@@ -44,11 +44,13 @@ bun run make
 
 - **Tray Icon**: メニューバーにアイコンを表示、右クリックで終了メニュー
 - **Floating Window**: 録音中に表示されるオーバーレイウィンドウ（focusable: false）
+  - `resizeFloatingWindow()` で状態に応じた動的サイズ変更が可能
 - **Global Shortcut**: `Cmd+Shift+Space` で録音開始/停止
 
 ### Electron プロセス構成
 
 - **Main Process** (`src/main.ts`): トレイアイコン、グローバルショートカット、IPC ハンドラ、Hono サーバーの起動
+  - `AppState` 状態マシン（`idle | recording | transcribing | error`）でアプリ状態を管理
 - **Preload Script** (`src/preload.ts`): contextBridge による IPC ブリッジ
 - **Overlay Renderer** (`src/overlay.tsx`): フローティングウィンドウの React エントリーポイント
 - **API Server** (`src/server/index.ts`): Hono ベースの HTTP サーバー（localhost:3001）

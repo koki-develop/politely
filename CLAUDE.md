@@ -23,6 +23,9 @@ Politely は Electron + React + TypeScript で構築された macOS 向けトレ
 # 開発サーバー起動
 bun start
 
+# 型チェック
+bun run typecheck
+
 # リント
 bun run lint
 

@@ -1,0 +1,65 @@
+import { useId } from "react";
+
+type ModelSelectorProps<T extends string> = {
+  label: string;
+  description: string;
+  value: T;
+  options: readonly T[];
+  onChange: (value: T) => void;
+  disabled?: boolean;
+};
+
+export const ModelSelector = <T extends string>({
+  label,
+  description,
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: ModelSelectorProps<T>) => {
+  const id = useId();
+
+  return (
+    <div className="group">
+      <label htmlFor={id} className="block mb-3">
+        <span className="text-[13px] font-medium text-zinc-100 tracking-[-0.01em]">
+          {label}
+        </span>
+        <span className="block text-[11px] text-zinc-500 mt-0.5 tracking-[-0.01em]">
+          {description}
+        </span>
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value as T)}
+          disabled={disabled}
+          className="w-full h-9 px-3 pr-8 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-[13px] text-zinc-200 tracking-[-0.01em] appearance-none cursor-pointer transition-all duration-150 ease-out hover:bg-zinc-800/80 hover:border-zinc-600/60 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-800/60 disabled:hover:border-zinc-700/50"
+        >
+          {options.map((option) => (
+            <option key={option} value={option} className="bg-zinc-800">
+              {option}
+            </option>
+          ))}
+        </select>
+        {/* Chevron icon */}
+        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 group-hover:text-zinc-400 transition-colors">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 4.5L6 7.5L9 4.5" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+};

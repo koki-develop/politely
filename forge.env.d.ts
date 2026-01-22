@@ -2,3 +2,6 @@
 
 declare const OVERLAY_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const OVERLAY_WINDOW_VITE_NAME: string;
+
+declare const SETTINGS_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
+declare const SETTINGS_WINDOW_VITE_NAME: string;

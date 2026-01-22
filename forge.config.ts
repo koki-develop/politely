@@ -34,11 +34,20 @@ const config: ForgeConfig = {
           config: "vite.preload.config.ts",
           target: "preload",
         },
+        {
+          entry: "src/preload.settings.ts",
+          config: "vite.preload.config.ts",
+          target: "preload",
+        },
       ],
       renderer: [
         {
           name: "overlay_window",
           config: "vite.overlay.config.ts",
+        },
+        {
+          name: "settings_window",
+          config: "vite.settings.config.ts",
         },
       ],
     }),

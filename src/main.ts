@@ -15,6 +15,9 @@ import {
 import { IPC_MAIN_TO_RENDERER, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
 import { pasteText, savePreviousApp } from "./pasteService";
 import { generateAuthToken, startServer, stopServer } from "./server";
+import type { AppSettings } from "./settings/schema";
+import { getSettings, updateSettings } from "./settings/store";
+import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { appStateManager } from "./state/appState";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -31,6 +34,14 @@ function createTray() {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: "Politely", enabled: false },
+      { type: "separator" },
+      {
+        label: "Settings...",
+        click: () => {
+          const preloadPath = path.join(__dirname, "preload.settings.js");
+          createSettingsWindow(preloadPath);
+        },
+      },
       { type: "separator" },
       { label: "Quit", click: () => app.quit() },
     ]),
@@ -121,6 +132,21 @@ function setupIpcHandlers() {
       resizeFloatingWindow(width, height);
     },
   );
+
+  // Settings IPC handlers
+  ipcMain.on(IPC_RENDERER_TO_MAIN.GET_SETTINGS, (event) => {
+    const settings = getSettings();
+    event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
+  });
+
+  ipcMain.on(
+    IPC_RENDERER_TO_MAIN.UPDATE_SETTINGS,
+    (event, newSettings: Partial<AppSettings>) => {
+      updateSettings(newSettings);
+      const settings = getSettings();
+      event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
+    },
+  );
 }
 
 app.on("ready", async () => {
@@ -170,6 +196,7 @@ app.on("will-quit", () => {
 app.on("before-quit", async (event) => {
   event.preventDefault();
   destroyFloatingWindow();
+  destroySettingsWindow();
   await stopServer();
   app.exit(0);
 });

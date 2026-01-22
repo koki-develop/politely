@@ -1,5 +1,6 @@
 import type { AppState } from "../state/appState";
 import type { MainToRendererChannel } from "../ipc/channels";
+import type { AppSettings } from "../settings/schema";
 
 export type StateChangePayload = {
   state: AppState;
@@ -24,8 +25,17 @@ export interface ElectronAPI {
   removeAllListeners: (channel: MainToRendererChannel) => void;
 }
 
+export interface SettingsElectronAPI {
+  // Settings
+  requestSettings: () => void;
+  updateSettings: (settings: Partial<AppSettings>) => void;
+  onSettingsData: (callback: (settings: AppSettings) => void) => void;
+  removeAllListeners: (channel: string) => void;
+}
+
 declare global {
   interface Window {
     electronAPI: ElectronAPI;
+    settingsAPI: SettingsElectronAPI;
   }
 }

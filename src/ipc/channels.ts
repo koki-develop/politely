@@ -8,6 +8,8 @@ export const IPC_MAIN_TO_RENDERER = {
   STOP_RECORDING: "stop-recording",
   AUTH_TOKEN: "auth-token",
   STATE_CHANGED: "state-changed",
+  // Settings
+  SETTINGS_DATA: "settings-data",
 } as const;
 
 // Renderer -> Main channels
@@ -17,6 +19,9 @@ export const IPC_RENDERER_TO_MAIN = {
   RECORDING_ERROR: "recording-error",
   ERROR_DISMISSED: "error-dismissed",
   SET_WINDOW_SIZE: "set-window-size",
+  // Settings
+  GET_SETTINGS: "get-settings",
+  UPDATE_SETTINGS: "update-settings",
 } as const;
 
 // Type exports

@@ -6,6 +6,7 @@ import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
+import { getSettings } from "../settings/store";
 
 const app = new Hono();
 
@@ -23,8 +24,9 @@ const PoliteTextSchema = z.object({
  */
 const convertToPolite = async (text: string): Promise<string> => {
   try {
+    const { gptModel } = getSettings();
     const completion = await openai.chat.completions.parse({
-      model: "gpt-4o-mini",
+      model: gptModel,
       messages: [
         {
           role: "system",
@@ -95,9 +97,10 @@ app.post("/api/transcribe", async (c) => {
     }
 
     // 1. 音声文字起こし
+    const { whisperModel } = getSettings();
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
-      model: "whisper-1",
+      model: whisperModel,
       language: "ja",
     });
     console.log("[Transcribe] Original:", transcription.text);

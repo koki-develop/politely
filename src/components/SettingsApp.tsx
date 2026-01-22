@@ -47,7 +47,7 @@ export const SettingsApp = () => {
       <div className="h-screen bg-zinc-900 flex items-center justify-center">
         <div className="flex items-center gap-2 text-zinc-500 text-[13px]">
           <div className="w-3 h-3 border-2 border-zinc-600 border-t-violet-500 rounded-full animate-spin" />
-          <span>Loading...</span>
+          <span>読み込み中...</span>
         </div>
       </div>
     );
@@ -63,10 +63,10 @@ export const SettingsApp = () => {
         {/* API Key Section */}
         <div className="mb-6">
           <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
-            API Key
+            API キー
           </h1>
           <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
-            Configure your OpenAI API key for authentication
+            認証用の OpenAI API キーを設定します
           </p>
         </div>
 
@@ -83,10 +83,10 @@ export const SettingsApp = () => {
         {/* Models Section */}
         <div className="mb-6">
           <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
-            Models
+            モデル
           </h1>
           <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
-            Configure AI models for transcription and text conversion
+            文字起こしとテキスト変換用の AI モデルを設定します
           </p>
         </div>
 
@@ -95,8 +95,8 @@ export const SettingsApp = () => {
           {/* Whisper Model */}
           <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
             <ModelSelector
-              label="Speech-to-Text"
-              description="Model for voice transcription"
+              label="音声認識"
+              description="音声の文字起こしに使用するモデル"
               value={settings.whisperModel}
               options={WHISPER_MODELS}
               onChange={handleWhisperModelChange}
@@ -106,8 +106,8 @@ export const SettingsApp = () => {
           {/* GPT Model */}
           <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
             <ModelSelector
-              label="Text Conversion"
-              description="Model for polite language conversion"
+              label="テキスト変換"
+              description="丁寧な表現への変換に使用するモデル"
               value={settings.gptModel}
               options={GPT_MODELS}
               onChange={handleGptModelChange}
@@ -118,18 +118,18 @@ export const SettingsApp = () => {
         {/* Appearance Section */}
         <div className="mb-6 mt-8">
           <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
-            Appearance
+            外観
           </h1>
           <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
-            Configure how Politely appears on your screen
+            Politely の画面表示方法を設定します
           </p>
         </div>
 
         <div className="space-y-5">
           <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
             <ToggleSwitch
-              label="Show Window When Idle"
-              description="Display the floating window when not recording"
+              label="待機時にウィンドウを表示"
+              description="録音していない時にフローティングウィンドウを表示します"
               checked={settings.showWindowOnIdle}
               onChange={handleShowWindowOnIdleChange}
             />

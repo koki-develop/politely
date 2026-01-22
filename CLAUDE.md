@@ -135,3 +135,8 @@ src/
 
 - **ミニマル**: 状態を表すテキスト（"Ready", "Recording" 等）は不要、アイコンやビジュアルのみで表現
 - **コンパクト**: フローティングウィンドウは極力小さく、邪魔にならないサイズに
+
+### OpenAI API 使用方針
+
+- **Structured Output を優先**: LLM からの出力を安定させるため、`openai.chat.completions.parse()` と Zod スキーマ（`zodResponseFormat`）を使用する
+- **注意**: `openai.beta.chat.completions.parse()` ではなく `openai.chat.completions.parse()` を使用すること

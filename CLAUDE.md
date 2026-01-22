@@ -73,6 +73,10 @@ src/
 ├── pasteService.ts      # クリップボード + ペースト処理
 ├── server/              # Hono API サーバー
 │   └── index.ts
+├── ipc/                 # IPC チャンネル定数（型安全な IPC 通信）
+│   └── channels.ts
+├── state/               # 状態管理
+│   └── appState.ts      # AppStateManager（状態マシン）
 ├── hooks/               # カスタムフック
 │   └── useAudioRecorder.ts
 ├── components/          # React コンポーネント
@@ -86,6 +90,15 @@ src/
 - `vite.main.config.ts` - Main プロセス用
 - `vite.preload.config.ts` - Preload スクリプト用
 - `vite.overlay.config.ts` - Overlay Renderer 用（React Compiler + Tailwind CSS）
+
+**注意**: `vite.main.config.ts` と `vite.preload.config.ts` は空の設定（`defineConfig({})`）でOK。Electron Forge の Vite プラグインが Node.js 向けの設定を自動で処理する。
+
+### 状態管理
+
+- **Single Source of Truth**: Main Process (`AppStateManager`) が唯一の状態管理元
+- **状態同期**: Main Process が状態変更時に `state-changed` IPC で Renderer に通知
+- **Renderer**: `onStateChanged` で状態を購読し、ローカル状態を直接更新しない
+- **状態遷移検証**: `AppStateManager.transition()` で有効な遷移のみ許可
 
 ### データフロー
 

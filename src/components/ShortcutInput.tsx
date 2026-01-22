@@ -147,7 +147,7 @@ export const ShortcutInput = ({ value, onChange }: ShortcutInputProps) => {
         <button
           type="button"
           onClick={handleReset}
-          className="text-zinc-500 hover:text-zinc-400 transition-colors text-[11px] px-2 py-1"
+          className="text-zinc-500 hover:text-zinc-400 transition-colors text-[11px] px-2 py-1 cursor-pointer"
           title="デフォルトにリセット"
         >
           リセット

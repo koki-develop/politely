@@ -198,7 +198,7 @@ export const RecordingOverlay = () => {
         <button
           type="button"
           onClick={handleCancel}
-          className="text-zinc-500 hover:text-white text-[10px] transition-colors [-webkit-app-region:no-drag]"
+          className="text-zinc-500 hover:text-white text-[10px] transition-colors cursor-pointer [-webkit-app-region:no-drag]"
         >
           Cancel
         </button>
@@ -219,7 +219,7 @@ export const RecordingOverlay = () => {
         <button
           type="button"
           onClick={handleTranscribingCancel}
-          className="text-zinc-500 hover:text-white text-[10px] transition-colors [-webkit-app-region:no-drag]"
+          className="text-zinc-500 hover:text-white text-[10px] transition-colors cursor-pointer [-webkit-app-region:no-drag]"
         >
           Cancel
         </button>

@@ -32,7 +32,7 @@ export const ToggleSwitch = ({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`
-          relative w-11 h-6 rounded-full transition-all duration-200 ease-out
+          relative w-11 h-6 rounded-full transition-all duration-200 ease-out cursor-pointer
           ${checked ? "bg-violet-500" : "bg-zinc-700 hover:bg-zinc-600"}
         `}
       >

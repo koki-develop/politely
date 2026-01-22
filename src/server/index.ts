@@ -100,6 +100,7 @@ app.post("/api/transcribe", async (c) => {
       model: "whisper-1",
       language: "ja",
     });
+    console.log("[Transcribe] Original:", transcription.text);
 
     // 2. 丁寧語に変換
     const politeText = await convertToPolite(transcription.text);

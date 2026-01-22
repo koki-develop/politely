@@ -69,9 +69,12 @@ bun run make
 src/
 ├── main.ts              # Electron メインプロセス（トレイアプリ）
 ├── overlay.tsx          # オーバーレイウィンドウ React エントリーポイント
+├── settings.tsx         # 設定画面 React エントリーポイント
 ├── preload.ts           # IPC ブリッジ（contextBridge）
+├── preload.settings.ts  # 設定画面用 IPC ブリッジ
 ├── index.css            # Tailwind CSS
 ├── floatingWindow.ts    # フローティングウィンドウ管理
+├── settingsWindow.ts    # 設定ウィンドウ管理
 ├── globalShortcut.ts    # グローバルショートカット管理
 ├── pasteService.ts      # クリップボード + ペースト処理
 ├── server/              # Hono API サーバー
@@ -80,10 +83,15 @@ src/
 │   └── channels.ts
 ├── state/               # 状態管理
 │   └── appState.ts      # AppStateManager（状態マシン）
+├── settings/            # 設定管理
+│   ├── schema.ts        # Zod スキーマ・型定義
+│   └── store.ts         # electron-store ラッパー
 ├── hooks/               # カスタムフック
 │   └── useAudioRecorder.ts
 ├── components/          # React コンポーネント
-│   └── RecordingOverlay.tsx
+│   ├── RecordingOverlay.tsx
+│   ├── SettingsApp.tsx
+│   └── ModelSelector.tsx
 └── types/               # 型定義
     └── electron.d.ts
 ```
@@ -93,8 +101,25 @@ src/
 - `vite.main.config.ts` - Main プロセス用
 - `vite.preload.config.ts` - Preload スクリプト用
 - `vite.overlay.config.ts` - Overlay Renderer 用（React Compiler + Tailwind CSS）
+- `vite.settings.config.ts` - Settings Renderer 用
 
 **注意**: `vite.main.config.ts` と `vite.preload.config.ts` は空の設定（`defineConfig({})`）でOK。Electron Forge の Vite プラグインが Node.js 向けの設定を自動で処理する。
+
+### 新しい Renderer ウィンドウの追加方法
+
+1. `{name}.html` を作成（例: `settings.html`）
+2. `src/{name}.tsx` を作成（React エントリーポイント）
+3. `src/preload.{name}.ts` を作成（IPC ブリッジ）
+4. `src/{name}Window.ts` を作成（BrowserWindow 管理）
+5. `vite.{name}.config.ts` を作成（`vite.overlay.config.ts` をコピー、`input` パスを変更）
+6. `forge.config.ts` の `renderer` 配列と `build` 配列に追加
+7. `forge.env.d.ts` に `{NAME}_WINDOW_VITE_DEV_SERVER_URL` と `{NAME}_WINDOW_VITE_NAME` を追加
+
+### 設定の永続化
+
+- **electron-store** を使用（Main Process でのみ動作）
+- **zod** でスキーマ定義・バリデーション（`z.enum()` で選択肢を定義、`safeParse()` でバリデーション）
+- 設定データは `~/Library/Application Support/politely/settings.json` に保存
 
 ### 状態管理
 

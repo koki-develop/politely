@@ -30,6 +30,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   sendRecordingCancelled: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.RECORDING_CANCELLED);
   },
+  sendTranscribingCancelled: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.TRANSCRIBING_CANCELLED);
+  },
   sendRecordingError: (error: string) => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.RECORDING_ERROR, error);
   },

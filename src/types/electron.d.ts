@@ -24,6 +24,7 @@ export interface ElectronAPI {
   // Renderer -> Main senders
   sendTranscriptionComplete: (text: string) => void;
   sendRecordingCancelled: () => void;
+  sendTranscribingCancelled: () => void;
   sendRecordingError: (error: string) => void;
   sendErrorDismissed: () => void;
   setWindowSize: (width: number, height: number) => void;

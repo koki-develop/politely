@@ -20,6 +20,7 @@ export const IPC_INVOKE = {
 export const IPC_RENDERER_TO_MAIN = {
   TRANSCRIPTION_COMPLETE: "transcription-complete",
   RECORDING_CANCELLED: "recording-cancelled",
+  TRANSCRIBING_CANCELLED: "transcribing-cancelled",
   RECORDING_ERROR: "recording-error",
   ERROR_DISMISSED: "error-dismissed",
   SET_WINDOW_SIZE: "set-window-size",

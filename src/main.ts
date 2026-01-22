@@ -25,6 +25,7 @@ import { getSettings, updateSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { appStateManager } from "./state/appState";
 import {
+  abortTranscription,
   initializeOpenAI,
   resetOpenAI,
   transcribe,
@@ -126,6 +127,12 @@ function setupIpcHandlers() {
 
   ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_CANCELLED, () => {
     console.log("[Main] Recording cancelled");
+    appStateManager.transition("idle");
+  });
+
+  ipcMain.on(IPC_RENDERER_TO_MAIN.TRANSCRIBING_CANCELLED, () => {
+    console.log("[Main] Transcribing cancelled");
+    abortTranscription();
     appStateManager.transition("idle");
   });
 

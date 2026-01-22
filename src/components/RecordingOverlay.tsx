@@ -8,8 +8,8 @@ import type { StateChangePayload, TranscribeResult } from "../types/electron";
 type OverlayState = AppState;
 
 const WINDOW_SIZE_IDLE = { width: 130, height: 32 };
-const WINDOW_SIZE_RECORDING = { width: 120, height: 32 };
-const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 32 };
+const WINDOW_SIZE_RECORDING = { width: 130, height: 56 };
+const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 56 };
 const WINDOW_SIZE_ERROR = { width: 280, height: 100 };
 
 // Static SVG Icons (hoisted to avoid re-creation on each render)
@@ -164,6 +164,10 @@ export const RecordingOverlay = () => {
     window.electronAPI.sendRecordingCancelled();
   }, [recorderState, stopRecording]);
 
+  const handleTranscribingCancel = useCallback(() => {
+    window.electronAPI.sendTranscribingCancelled();
+  }, []);
+
   const handleDismissError = useCallback(() => {
     // State is managed by Main Process via onStateChanged
     window.electronAPI.sendErrorDismissed();
@@ -182,11 +186,14 @@ export const RecordingOverlay = () => {
   // Recording State
   if (overlayState === "recording") {
     return (
-      <div className="w-full h-full flex items-center justify-center gap-3 glass-bg rounded-full border border-red-500/30 select-none [-webkit-app-region:drag]">
-        {/* Pulse Ring */}
-        <div className="relative flex items-center justify-center">
-          <div className="absolute w-4 h-4 rounded-full bg-gradient-to-r from-red-500/40 to-orange-500/40 animate-pulse-ring" />
-          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500" />
+      <div className="w-full h-full flex flex-col items-center justify-center gap-1 glass-bg rounded-2xl border border-red-500/30 select-none [-webkit-app-region:drag]">
+        <div className="flex items-center justify-center gap-2 h-4">
+          {/* Pulse Ring */}
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-4 h-4 rounded-full bg-gradient-to-r from-red-500/40 to-orange-500/40 animate-pulse-ring" />
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500" />
+          </div>
+          <span className="text-zinc-500 text-[10px]">⌘⇧Space</span>
         </div>
         <button
           type="button"
@@ -202,13 +209,20 @@ export const RecordingOverlay = () => {
   // Transcribing State
   if (overlayState === "transcribing") {
     return (
-      <div className="w-full h-full flex items-center justify-center glass-bg rounded-full border border-amber-500/30 select-none [-webkit-app-region:drag]">
+      <div className="w-full h-full flex flex-col items-center justify-center gap-1 glass-bg rounded-2xl border border-amber-500/30 select-none [-webkit-app-region:drag]">
         {/* Wave Dots */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-center gap-1.5 h-4">
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave" />
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave-delay-1" />
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave-delay-2" />
         </div>
+        <button
+          type="button"
+          onClick={handleTranscribingCancel}
+          className="text-zinc-500 hover:text-white text-[10px] transition-colors [-webkit-app-region:no-drag]"
+        >
+          Cancel
+        </button>
       </div>
     );
   }

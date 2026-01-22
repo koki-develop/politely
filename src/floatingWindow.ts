@@ -13,9 +13,10 @@ export function createFloatingWindow(preloadPath: string): BrowserWindow {
 
   const windowWidth = 130;
   const windowHeight = 32;
+  const bottomMargin = -16;
 
   const x = Math.floor((screenWidth - windowWidth) / 2);
-  const y = screenHeight - 16;
+  const y = screenHeight - windowHeight - bottomMargin;
 
   floatingWindow = new BrowserWindow({
     width: windowWidth,
@@ -77,8 +78,9 @@ export function resizeFloatingWindow(width: number, height: number): void {
 
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
+  const bottomMargin = -16;
   const x = Math.floor((screenWidth - width) / 2);
-  const y = screenHeight - 16;
+  const y = screenHeight - height - bottomMargin;
 
   floatingWindow.setBounds({ x, y, width, height });
 }

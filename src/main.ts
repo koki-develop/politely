@@ -19,7 +19,11 @@ import {
   IPC_MAIN_TO_RENDERER,
   IPC_RENDERER_TO_MAIN,
 } from "./ipc/channels";
-import { pasteText, savePreviousApp } from "./pasteService";
+import {
+  pasteText,
+  startActiveAppTracking,
+  stopActiveAppTracking,
+} from "./pasteService";
 import type { AppSettings } from "./settings/schema";
 import { getSettings, updateSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
@@ -85,7 +89,7 @@ export function reregisterGlobalShortcut() {
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
 }
 
-async function handleShortcutPress() {
+function handleShortcutPress() {
   const floatingWindow = getFloatingWindow();
   if (!floatingWindow) return;
 
@@ -101,7 +105,7 @@ async function handleShortcutPress() {
         return;
       }
 
-      await savePreviousApp();
+      // アクティブアプリは既にトラッキング済みなので await 不要
       if (appStateManager.transition("recording")) {
         floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
       }
@@ -310,6 +314,9 @@ app.on("ready", async () => {
   setupIpcHandlers();
 
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
+
+  // アクティブアプリのトラッキングを開始
+  startActiveAppTracking();
 });
 
 // トレイアプリなのでウィンドウが閉じても終了しない
@@ -318,6 +325,7 @@ app.on("window-all-closed", () => {
 });
 
 app.on("will-quit", () => {
+  stopActiveAppTracking();
   unregisterAllShortcuts();
 });
 

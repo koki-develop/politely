@@ -21,12 +21,16 @@ export const GPT_MODELS = [
 export const GptModelSchema = z.enum(GPT_MODELS);
 export type GptModel = z.infer<typeof GptModelSchema>;
 
+// デフォルトショートカット
+export const DEFAULT_SHORTCUT = "Command+Shift+Space";
+
 // 設定スキーマ
 export const AppSettingsSchema = z.object({
   apiKey: z.string().optional(),
   whisperModel: WhisperModelSchema,
   gptModel: GptModelSchema,
   showWindowOnIdle: z.boolean(),
+  globalShortcut: z.string(),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
 
@@ -36,4 +40,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   whisperModel: "whisper-1",
   gptModel: "gpt-4.1-mini",
   showWindowOnIdle: true,
+  globalShortcut: DEFAULT_SHORTCUT,
 };

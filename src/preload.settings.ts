@@ -15,6 +15,12 @@ contextBridge.exposeInMainWorld("settingsAPI", {
       (_event, settings: AppSettings) => callback(settings),
     );
   },
+  onShortcutError: (callback: (error: string) => void) => {
+    ipcRenderer.on(
+      IPC_MAIN_TO_RENDERER.SHORTCUT_ERROR,
+      (_event, error: string) => callback(error),
+    );
+  },
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
   },

@@ -1,32 +1,48 @@
 import { globalShortcut } from "electron";
 
-type ShortcutCallback = () => void;
+export type ShortcutCallback = () => void;
 
-const SHORTCUT_ACCELERATOR = "Command+Shift+Space";
+let currentAccelerator: string | null = null;
+let currentCallback: ShortcutCallback | null = null;
 
-let isRegistered = false;
-
-export function registerGlobalShortcut(callback: ShortcutCallback): boolean {
-  if (isRegistered) {
-    return true;
+export function registerGlobalShortcut(
+  accelerator: string,
+  callback: ShortcutCallback,
+): { success: true } | { success: false; error: string } {
+  // 既存のショートカットを解除
+  if (currentAccelerator) {
+    globalShortcut.unregister(currentAccelerator);
   }
 
-  const success = globalShortcut.register(SHORTCUT_ACCELERATOR, callback);
+  const success = globalShortcut.register(accelerator, callback);
 
   if (success) {
-    isRegistered = true;
-    console.log(`[GlobalShortcut] Registered: ${SHORTCUT_ACCELERATOR}`);
-  } else {
-    console.error(
-      `[GlobalShortcut] Failed to register: ${SHORTCUT_ACCELERATOR}`,
-    );
+    currentAccelerator = accelerator;
+    currentCallback = callback;
+    console.log(`[GlobalShortcut] Registered: ${accelerator}`);
+    return { success: true };
   }
 
-  return success;
+  // 登録失敗時は元のショートカットを復元
+  if (currentAccelerator && currentCallback) {
+    globalShortcut.register(currentAccelerator, currentCallback);
+    console.log(`[GlobalShortcut] Restored: ${currentAccelerator}`);
+  }
+
+  console.error(`[GlobalShortcut] Failed to register: ${accelerator}`);
+  return {
+    success: false,
+    error: `ショートカット "${accelerator}" の登録に失敗しました。他のアプリが使用している可能性があります。`,
+  };
+}
+
+export function getCurrentAccelerator(): string | null {
+  return currentAccelerator;
 }
 
 export function unregisterAllShortcuts(): void {
   globalShortcut.unregisterAll();
-  isRegistered = false;
+  currentAccelerator = null;
+  currentCallback = null;
   console.log("[GlobalShortcut] Unregistered all shortcuts");
 }

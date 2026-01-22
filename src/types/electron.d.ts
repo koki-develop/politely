@@ -43,6 +43,7 @@ export interface SettingsElectronAPI {
   requestSettings: () => void;
   updateSettings: (settings: Partial<AppSettings>) => void;
   onSettingsData: (callback: (settings: AppSettings) => void) => void;
+  onShortcutError: (callback: (error: string) => void) => void;
   removeAllListeners: (channel: string) => void;
 }
 

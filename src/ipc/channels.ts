@@ -9,6 +9,7 @@ export const IPC_MAIN_TO_RENDERER = {
   STATE_CHANGED: "state-changed",
   // Settings
   SETTINGS_DATA: "settings-data",
+  SHORTCUT_ERROR: "shortcut-error",
 } as const;
 
 // Invoke channels (Renderer -> Main with response)

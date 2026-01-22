@@ -201,6 +201,30 @@ function setupIpcHandlers() {
         }
       }
 
+      // グローバルショートカットが変更された場合、再登録
+      if (
+        "globalShortcut" in newSettings &&
+        newSettings.globalShortcut !== oldSettings.globalShortcut &&
+        newSettings.globalShortcut
+      ) {
+        const result = registerGlobalShortcut(
+          newSettings.globalShortcut,
+          handleShortcutPress,
+        );
+        if (!result.success) {
+          // 登録失敗時は元のショートカットに戻す
+          updateSettings({ globalShortcut: oldSettings.globalShortcut });
+          event.sender.send(IPC_MAIN_TO_RENDERER.SHORTCUT_ERROR, result.error);
+          // 元の設定を送信して終了
+          const restoredSettings = getSettings();
+          event.sender.send(
+            IPC_MAIN_TO_RENDERER.SETTINGS_DATA,
+            restoredSettings,
+          );
+          return;
+        }
+      }
+
       const settings = getSettings();
       event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
     },
@@ -266,7 +290,7 @@ app.on("ready", async () => {
 
   setupIpcHandlers();
 
-  registerGlobalShortcut(handleShortcutPress);
+  registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
 });
 
 // トレイアプリなのでウィンドウが閉じても終了しない

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
 import {
   type AppSettings,
+  DEFAULT_SHORTCUT,
   GPT_MODELS,
   type GptModel,
   WHISPER_MODELS,
@@ -9,10 +10,12 @@ import {
 } from "../settings/schema";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
+import { ShortcutInput } from "./ShortcutInput";
 import { ToggleSwitch } from "./ToggleSwitch";
 
 export const SettingsApp = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [shortcutError, setShortcutError] = useState<string | null>(null);
 
   useEffect(() => {
     window.settingsAPI.requestSettings();
@@ -21,8 +24,15 @@ export const SettingsApp = () => {
       setSettings(data);
     });
 
+    window.settingsAPI.onShortcutError((error: string) => {
+      setShortcutError(error);
+    });
+
     return () => {
       window.settingsAPI.removeAllListeners(IPC_MAIN_TO_RENDERER.SETTINGS_DATA);
+      window.settingsAPI.removeAllListeners(
+        IPC_MAIN_TO_RENDERER.SHORTCUT_ERROR,
+      );
     };
   }, []);
 
@@ -40,6 +50,11 @@ export const SettingsApp = () => {
 
   const handleShowWindowOnIdleChange = useCallback((checked: boolean) => {
     window.settingsAPI.updateSettings({ showWindowOnIdle: checked });
+  }, []);
+
+  const handleShortcutChange = useCallback((shortcut: string) => {
+    setShortcutError(null);
+    window.settingsAPI.updateSettings({ globalShortcut: shortcut });
   }, []);
 
   if (!settings) {
@@ -133,6 +148,28 @@ export const SettingsApp = () => {
               checked={settings.showWindowOnIdle}
               onChange={handleShowWindowOnIdleChange}
             />
+          </div>
+        </div>
+
+        {/* Shortcut Section */}
+        <div className="mb-6 mt-8">
+          <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
+            ショートカット
+          </h1>
+          <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
+            キーボードショートカットを設定します
+          </p>
+        </div>
+
+        <div className="space-y-5">
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <ShortcutInput
+              value={settings.globalShortcut ?? DEFAULT_SHORTCUT}
+              onChange={handleShortcutChange}
+            />
+            {shortcutError && (
+              <p className="text-[11px] text-red-400 mt-2">{shortcutError}</p>
+            )}
           </div>
         </div>
       </div>

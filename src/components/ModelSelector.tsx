@@ -6,7 +6,6 @@ type ModelSelectorProps<T extends string> = {
   value: T;
   options: readonly T[];
   onChange: (value: T) => void;
-  disabled?: boolean;
 };
 
 export const ModelSelector = <T extends string>({
@@ -15,7 +14,6 @@ export const ModelSelector = <T extends string>({
   value,
   options,
   onChange,
-  disabled = false,
 }: ModelSelectorProps<T>) => {
   const id = useId();
 
@@ -34,8 +32,7 @@ export const ModelSelector = <T extends string>({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value as T)}
-          disabled={disabled}
-          className="w-full h-9 px-3 pr-8 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-[13px] text-zinc-200 tracking-[-0.01em] appearance-none cursor-pointer transition-all duration-150 ease-out hover:bg-zinc-800/80 hover:border-zinc-600/60 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-800/60 disabled:hover:border-zinc-700/50"
+          className="w-full h-9 px-3 pr-8 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-[13px] text-zinc-200 tracking-[-0.01em] appearance-none cursor-pointer transition-all duration-150 ease-out hover:bg-zinc-800/80 hover:border-zinc-600/60 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/50"
         >
           {options.map((option) => (
             <option key={option} value={option} className="bg-zinc-800">

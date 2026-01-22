@@ -11,14 +11,12 @@ import { ModelSelector } from "./ModelSelector";
 
 export const SettingsApp = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     window.settingsAPI.requestSettings();
 
     window.settingsAPI.onSettingsData((data: AppSettings) => {
       setSettings(data);
-      setIsSaving(false);
     });
 
     return () => {
@@ -27,12 +25,10 @@ export const SettingsApp = () => {
   }, []);
 
   const handleWhisperModelChange = useCallback((model: WhisperModel) => {
-    setIsSaving(true);
     window.settingsAPI.updateSettings({ whisperModel: model });
   }, []);
 
   const handleGptModelChange = useCallback((model: GptModel) => {
-    setIsSaving(true);
     window.settingsAPI.updateSettings({ gptModel: model });
   }, []);
 
@@ -74,7 +70,6 @@ export const SettingsApp = () => {
               value={settings.whisperModel}
               options={WHISPER_MODELS}
               onChange={handleWhisperModelChange}
-              disabled={isSaving}
             />
           </div>
 
@@ -86,18 +81,9 @@ export const SettingsApp = () => {
               value={settings.gptModel}
               options={GPT_MODELS}
               onChange={handleGptModelChange}
-              disabled={isSaving}
             />
           </div>
         </div>
-      </div>
-
-      {/* Saving indicator */}
-      <div
-        className={`fixed bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-zinc-800/90 backdrop-blur-sm border border-zinc-700/50 rounded-full text-[11px] text-zinc-400 transition-all duration-200 ease-out ${isSaving ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
-      >
-        <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
-        <span>Saving...</span>
       </div>
     </div>
   );

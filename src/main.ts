@@ -39,7 +39,9 @@ if (started) {
 let tray: Tray | null = null;
 
 function createTray() {
-  const iconPath = path.join(__dirname, "../../assets/trayIconTemplate.png");
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, "assets", "trayIconTemplate.png")
+    : path.join(__dirname, "../../assets/trayIconTemplate.png");
   tray = new Tray(iconPath);
   tray.setToolTip("Politely - Voice Input");
   tray.setContextMenu(

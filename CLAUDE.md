@@ -53,7 +53,7 @@ bun run make
   - 全画面アプリの上に表示するため `setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })` と `setAlwaysOnTop(true, "screen-saver")` を設定
   - `type: "panel"` + `showInactive()` で元のアプリのフォーカスを維持（Spotlight のような動作）
   - 透明ウィンドウで CSS が正しく適用されるよう `html, body, #root { height: 100% }` が必須（`index.css`）
-- **Global Shortcut**: `Cmd+Shift+Space` で録音開始/停止
+- **Global Shortcut**: デフォルト `Cmd+Shift+Space` で録音開始/停止（設定でカスタマイズ可能）
 
 ### Electron プロセス構成
 
@@ -93,7 +93,8 @@ src/
 │   ├── SettingsApp.tsx
 │   ├── ModelSelector.tsx
 │   ├── ApiKeyInput.tsx
-│   └── ToggleSwitch.tsx
+│   ├── ToggleSwitch.tsx
+│   └── ShortcutInput.tsx
 └── types/               # 型定義
     └── electron.d.ts
 ```
@@ -132,9 +133,9 @@ src/
 
 ### データフロー
 
-1. `Cmd+Shift+Space` → Main Process がアクティブアプリを記録
+1. グローバルショートカット（デフォルト `Cmd+Shift+Space`）→ Main Process がアクティブアプリを記録
 2. フローティングウィンドウ表示 → 録音開始
-3. 再度 `Cmd+Shift+Space` → 録音停止
+3. 再度グローバルショートカット → 録音停止
 4. 音声を IPC 経由で Main Process に送信、Whisper API で文字起こし + GPT で丁寧語変換
 5. 文字起こし結果をクリップボードに書き込み
 6. AppleScript で元のアプリをアクティブにして `Cmd+V` をシミュレート

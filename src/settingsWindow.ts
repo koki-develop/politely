@@ -37,6 +37,7 @@ export function createSettingsWindow(preloadPath: string): BrowserWindow {
     show: false,
     title: "Politely Settings",
     skipTaskbar: false,
+    backgroundColor: "#18181b",
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

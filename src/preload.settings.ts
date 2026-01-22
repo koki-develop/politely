@@ -24,4 +24,10 @@ contextBridge.exposeInMainWorld("settingsAPI", {
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
   },
+  startShortcutCapture: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_START);
+  },
+  endShortcutCapture: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_END);
+  },
 });

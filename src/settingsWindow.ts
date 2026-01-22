@@ -2,13 +2,19 @@ import path from "node:path";
 import { BrowserWindow, screen } from "electron";
 
 let settingsWindow: BrowserWindow | null = null;
+let onCloseCallback: (() => void) | null = null;
 
-export function createSettingsWindow(preloadPath: string): BrowserWindow {
+export function createSettingsWindow(
+  preloadPath: string,
+  onClose?: () => void,
+): BrowserWindow {
   // 既存のウィンドウがあればフォーカス
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.focus();
     return settingsWindow;
   }
+
+  onCloseCallback = onClose ?? null;
 
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
@@ -63,7 +69,12 @@ export function createSettingsWindow(preloadPath: string): BrowserWindow {
   });
 
   settingsWindow.on("closed", () => {
+    // キャプチャモード中にウィンドウを閉じた場合のためにコールバックを呼び出す
+    if (onCloseCallback) {
+      onCloseCallback();
+    }
     settingsWindow = null;
+    onCloseCallback = null;
   });
 
   return settingsWindow;

@@ -30,6 +30,9 @@ export const IPC_RENDERER_TO_MAIN = {
   GET_SETTINGS: "get-settings",
   UPDATE_SETTINGS: "update-settings",
   OPEN_SETTINGS: "open-settings",
+  // Shortcut capture
+  SHORTCUT_CAPTURE_START: "shortcut-capture-start",
+  SHORTCUT_CAPTURE_END: "shortcut-capture-end",
 } as const;
 
 // Type exports

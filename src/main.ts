@@ -73,7 +73,16 @@ function broadcastStateChange() {
 
 function openSettingsWindow() {
   const preloadPath = path.join(__dirname, "preload.settings.js");
-  createSettingsWindow(preloadPath);
+  createSettingsWindow(preloadPath, reregisterGlobalShortcut);
+}
+
+/**
+ * Re-register global shortcut from current settings.
+ * Used when exiting shortcut capture mode or when settings window closes.
+ */
+export function reregisterGlobalShortcut() {
+  const settings = getSettings();
+  registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
 }
 
 async function handleShortcutPress() {
@@ -232,6 +241,16 @@ function setupIpcHandlers() {
 
   // 設定画面を開く
   ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS, openSettingsWindow);
+
+  // ショートカットキャプチャ開始（設定画面でショートカット入力中）
+  ipcMain.on(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_START, () => {
+    unregisterAllShortcuts();
+  });
+
+  // ショートカットキャプチャ終了
+  ipcMain.on(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_END, () => {
+    reregisterGlobalShortcut();
+  });
 
   // 文字起こし (IPC invoke)
   ipcMain.handle(

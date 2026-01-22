@@ -67,6 +67,11 @@ export const ShortcutInput = ({ value, onChange }: ShortcutInputProps) => {
     setLocalValue(value);
   }, [value]);
 
+  const endCapture = useCallback(() => {
+    setIsCapturing(false);
+    window.settingsAPI.endShortcutCapture();
+  }, []);
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!isCapturing) return;
@@ -75,7 +80,7 @@ export const ShortcutInput = ({ value, onChange }: ShortcutInputProps) => {
       event.stopPropagation();
 
       if (event.key === "Escape") {
-        setIsCapturing(false);
+        endCapture();
         return;
       }
 
@@ -83,10 +88,10 @@ export const ShortcutInput = ({ value, onChange }: ShortcutInputProps) => {
       if (accelerator) {
         setLocalValue(accelerator);
         onChange(accelerator);
-        setIsCapturing(false);
+        endCapture();
       }
     },
-    [isCapturing, onChange],
+    [isCapturing, onChange, endCapture],
   );
 
   useEffect(() => {
@@ -100,11 +105,14 @@ export const ShortcutInput = ({ value, onChange }: ShortcutInputProps) => {
 
   const handleClick = useCallback(() => {
     setIsCapturing(true);
+    window.settingsAPI.startShortcutCapture();
   }, []);
 
   const handleBlur = useCallback(() => {
-    setIsCapturing(false);
-  }, []);
+    if (isCapturing) {
+      endCapture();
+    }
+  }, [isCapturing, endCapture]);
 
   const handleReset = useCallback(() => {
     setLocalValue(DEFAULT_SHORTCUT);

@@ -45,6 +45,9 @@ export interface SettingsElectronAPI {
   onSettingsData: (callback: (settings: AppSettings) => void) => void;
   onShortcutError: (callback: (error: string) => void) => void;
   removeAllListeners: (channel: string) => void;
+  // Shortcut capture
+  startShortcutCapture: () => void;
+  endShortcutCapture: () => void;
 }
 
 declare global {

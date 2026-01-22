@@ -13,8 +13,8 @@ const WINDOW_SIZE_RECORDING = { width: 120, height: 32 };
 const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 32 };
 const WINDOW_SIZE_ERROR = { width: 200, height: 70 };
 
-// SVG Icons
-const MicIcon = () => (
+// Static SVG Icons (hoisted to avoid re-creation on each render)
+const micIcon = (
   <svg
     width="14"
     height="14"
@@ -33,7 +33,7 @@ const MicIcon = () => (
   </svg>
 );
 
-const AlertIcon = () => (
+const alertIcon = (
   <svg
     width="14"
     height="14"
@@ -191,7 +191,7 @@ export const RecordingOverlay = () => {
   if (overlayState === "idle") {
     return (
       <div className="w-full h-full flex items-center justify-center gap-2 glass-bg rounded-full border border-white/10 animate-breathe select-none [-webkit-app-region:drag]">
-        <MicIcon />
+        {micIcon}
         <span className="text-zinc-500 text-[10px]">⌘⇧Space</span>
       </div>
     );
@@ -236,7 +236,7 @@ export const RecordingOverlay = () => {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center glass-bg rounded-full border border-red-500/40 px-3 py-2 select-none [-webkit-app-region:drag] animate-fade-in">
         <div className="flex items-center gap-2">
-          <AlertIcon />
+          {alertIcon}
           <div className="max-h-8 overflow-y-auto [-webkit-app-region:no-drag]">
             <span className="text-red-400 text-[10px] break-all block">
               {error}

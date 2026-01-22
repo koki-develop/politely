@@ -63,11 +63,11 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
   }, []);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && state === "recording") {
+    if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
       setState("processing");
     }
-  }, [state]);
+  }, []);
 
   return {
     state,

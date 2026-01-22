@@ -2,12 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
 import type { AppState } from "../state/appState";
-import type { StateChangePayload } from "../types/electron";
-
-type TranscribeResponse = {
-  text?: string;
-  error?: string;
-};
+import type { StateChangePayload, TranscribeResult } from "../types/electron";
 
 // Alias for clarity - renderer uses same states as main process
 type OverlayState = AppState;
@@ -68,7 +63,6 @@ export const RecordingOverlay = () => {
   const [overlayState, setOverlayState] = useState<OverlayState>("idle");
   const [error, setError] = useState<string | null>(null);
   const isCancelledRef = useRef(false);
-  const authTokenRef = useRef<string | null>(null);
 
   // Subscribe to state changes from Main Process (Single Source of Truth)
   useEffect(() => {
@@ -77,51 +71,28 @@ export const RecordingOverlay = () => {
       setError(payload.error);
     });
 
-    window.electronAPI.onAuthToken((token) => {
-      authTokenRef.current = token;
-    });
-
     return () => {
       window.electronAPI.removeAllListeners(IPC_MAIN_TO_RENDERER.STATE_CHANGED);
-      window.electronAPI.removeAllListeners(IPC_MAIN_TO_RENDERER.AUTH_TOKEN);
     };
   }, []);
 
   const transcribe = useCallback(async (blob: Blob) => {
-    // State is managed by Main Process, we just send events
-
-    if (!authTokenRef.current) {
-      window.electronAPI.sendRecordingError("Authentication not ready");
-      return;
-    }
-
     try {
-      const formData = new FormData();
-      formData.append("audio", blob, "recording.webm");
+      const arrayBuffer = await blob.arrayBuffer();
+      const result: TranscribeResult =
+        await window.electronAPI.transcribe(arrayBuffer);
 
-      const response = await fetch("http://localhost:3001/api/transcribe", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-Auth-Token": authTokenRef.current,
-        },
-      });
-
-      const data: TranscribeResponse = await response.json();
-
-      if (!response.ok) {
-        if (data.error === "API_KEY_NOT_CONFIGURED") {
-          window.electronAPI.openSettings();
-          window.electronAPI.sendRecordingError("API key not configured");
-          return;
+      if (result.success === true) {
+        if (result.text) {
+          window.electronAPI.sendTranscriptionComplete(result.text);
+        } else {
+          window.electronAPI.sendRecordingError("No speech detected");
         }
-        throw new Error(data.error || "Transcription failed");
-      }
-
-      if (data.text) {
-        window.electronAPI.sendTranscriptionComplete(data.text);
-      } else {
-        window.electronAPI.sendRecordingError("No speech detected");
+      } else if (result.success === false) {
+        if (result.errorCode === "API_KEY_NOT_CONFIGURED") {
+          window.electronAPI.openSettings();
+        }
+        window.electronAPI.sendRecordingError(result.error);
       }
     } catch (err) {
       const errorMessage =

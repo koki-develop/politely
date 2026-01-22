@@ -12,19 +12,21 @@ import {
   registerGlobalShortcut,
   unregisterAllShortcuts,
 } from "./globalShortcut";
-import { IPC_MAIN_TO_RENDERER, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
-import { pasteText, savePreviousApp } from "./pasteService";
 import {
-  generateAuthToken,
-  initializeOpenAI,
-  resetOpenAI,
-  startServer,
-  stopServer,
-} from "./server";
+  IPC_INVOKE,
+  IPC_MAIN_TO_RENDERER,
+  IPC_RENDERER_TO_MAIN,
+} from "./ipc/channels";
+import { pasteText, savePreviousApp } from "./pasteService";
 import type { AppSettings } from "./settings/schema";
 import { getSettings, updateSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { appStateManager } from "./state/appState";
+import {
+  initializeOpenAI,
+  resetOpenAI,
+  transcribe,
+} from "./transcription/service";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -173,6 +175,14 @@ function setupIpcHandlers() {
 
   // 設定画面を開く
   ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS, openSettingsWindow);
+
+  // 文字起こし (IPC invoke)
+  ipcMain.handle(
+    IPC_INVOKE.TRANSCRIBE,
+    async (_event, audioData: ArrayBuffer) => {
+      return await transcribe(audioData);
+    },
+  );
 }
 
 app.on("ready", async () => {
@@ -187,9 +197,6 @@ app.on("ready", async () => {
     initializeOpenAI(settings.apiKey);
   }
 
-  const authToken = generateAuthToken();
-  await startServer(3001);
-
   createTray();
 
   const preloadPath = path.join(__dirname, "preload.js");
@@ -200,12 +207,8 @@ app.on("ready", async () => {
     broadcastStateChange();
   });
 
-  // ウィンドウ読み込み完了後に認証トークンを送信し、Idle状態でウィンドウを表示
+  // ウィンドウ読み込み完了後にIdle状態でウィンドウを表示
   getFloatingWindow()?.webContents.on("did-finish-load", () => {
-    getFloatingWindow()?.webContents.send(
-      IPC_MAIN_TO_RENDERER.AUTH_TOKEN,
-      authToken,
-    );
     // 初期状態を送信
     broadcastStateChange();
     showFloatingWindow();
@@ -225,10 +228,9 @@ app.on("will-quit", () => {
   unregisterAllShortcuts();
 });
 
-app.on("before-quit", async (event) => {
+app.on("before-quit", (event) => {
   event.preventDefault();
   destroyFloatingWindow();
   destroySettingsWindow();
-  await stopServer();
   app.exit(0);
 });

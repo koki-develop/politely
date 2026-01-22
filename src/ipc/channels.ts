@@ -6,10 +6,14 @@
 export const IPC_MAIN_TO_RENDERER = {
   START_RECORDING: "start-recording",
   STOP_RECORDING: "stop-recording",
-  AUTH_TOKEN: "auth-token",
   STATE_CHANGED: "state-changed",
   // Settings
   SETTINGS_DATA: "settings-data",
+} as const;
+
+// Invoke channels (Renderer -> Main with response)
+export const IPC_INVOKE = {
+  TRANSCRIBE: "transcribe",
 } as const;
 
 // Renderer -> Main channels

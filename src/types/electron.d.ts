@@ -7,11 +7,18 @@ export type StateChangePayload = {
   error: string | null;
 };
 
+export type TranscribeSuccessResult = { success: true; text: string };
+export type TranscribeErrorResult = {
+  success: false;
+  error: string;
+  errorCode?: string;
+};
+export type TranscribeResult = TranscribeSuccessResult | TranscribeErrorResult;
+
 export interface ElectronAPI {
   // Main -> Renderer listeners
   onStartRecording: (callback: () => void) => void;
   onStopRecording: (callback: () => void) => void;
-  onAuthToken: (callback: (token: string) => void) => void;
   onStateChanged: (callback: (payload: StateChangePayload) => void) => void;
 
   // Renderer -> Main senders
@@ -21,6 +28,9 @@ export interface ElectronAPI {
   sendErrorDismissed: () => void;
   setWindowSize: (width: number, height: number) => void;
   openSettings: () => void;
+
+  // Invoke (async with response)
+  transcribe: (audioData: ArrayBuffer) => Promise<TranscribeResult>;
 
   // Cleanup
   removeAllListeners: (channel: MainToRendererChannel) => void;

@@ -2,7 +2,12 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import { IPC_MAIN_TO_RENDERER, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
+import {
+  IPC_INVOKE,
+  IPC_MAIN_TO_RENDERER,
+  IPC_RENDERER_TO_MAIN,
+} from "./ipc/channels";
+import type { TranscribeResult } from "./types/electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   onStartRecording: (callback: () => void) => {
@@ -10,11 +15,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   onStopRecording: (callback: () => void) => {
     ipcRenderer.on(IPC_MAIN_TO_RENDERER.STOP_RECORDING, callback);
-  },
-  onAuthToken: (callback: (token: string) => void) => {
-    ipcRenderer.on(IPC_MAIN_TO_RENDERER.AUTH_TOKEN, (_event, token) =>
-      callback(token),
-    );
   },
   onStateChanged: (
     callback: (payload: { state: string; error: string | null }) => void,
@@ -42,6 +42,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openSettings: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS);
   },
+
+  transcribe: (audioData: ArrayBuffer): Promise<TranscribeResult> => {
+    return ipcRenderer.invoke(IPC_INVOKE.TRANSCRIBE, audioData);
+  },
+
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
   },

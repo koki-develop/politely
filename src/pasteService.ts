@@ -38,14 +38,19 @@ export async function pasteText(text: string): Promise<void> {
   }
 }
 
+function escapeAppleScriptString(str: string): string {
+  return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
 async function activatePreviousAppAndPaste(): Promise<void> {
   if (!previousApp) {
     console.warn("[PasteService] No previous app saved, skipping paste");
     return;
   }
 
+  const sanitizedApp = escapeAppleScriptString(previousApp);
   const script = `
-    tell application "${previousApp}"
+    tell application "${sanitizedApp}"
       activate
     end tell
     delay 0.1

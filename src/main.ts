@@ -188,7 +188,7 @@ function setupIpcHandlers() {
 app.on("ready", async () => {
   // macOS: Dock アイコンを隠す
   if (process.platform === "darwin") {
-    app.dock.hide();
+    app.dock?.hide();
   }
 
   // 保存済みAPIキーでOpenAIクライアントを初期化

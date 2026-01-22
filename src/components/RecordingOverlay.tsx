@@ -11,6 +11,7 @@ const WINDOW_SIZE_IDLE = { width: 130, height: 32 };
 const WINDOW_SIZE_RECORDING = { width: 130, height: 56 };
 const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 56 };
 const WINDOW_SIZE_ERROR = { width: 280, height: 100 };
+const WINDOW_SIZE_ERROR_WITH_ACTION = { width: 280, height: 120 };
 
 // Static SVG Icons (hoisted to avoid re-creation on each render)
 const micIcon = (
@@ -140,21 +141,31 @@ export const RecordingOverlay = () => {
     }
   }, [recordError]);
 
+  // 権限エラーかどうかを判定
+  const isMicrophoneError = error?.includes("マイク") ?? false;
+  const isAccessibilityError = error?.includes("アクセシビリティ") ?? false;
+  const isPermissionError = isMicrophoneError || isAccessibilityError;
+
   useEffect(() => {
-    const sizes = {
-      idle: WINDOW_SIZE_IDLE,
-      recording: WINDOW_SIZE_RECORDING,
-      transcribing: WINDOW_SIZE_TRANSCRIBING,
-      error: WINDOW_SIZE_ERROR,
-    };
-    const size = sizes[overlayState];
     if (overlayState === "error") {
-      // エラー状態では画面中央に配置
+      // 権限エラーの場合はアクションボタン用に大きめのサイズ
+      const size = isPermissionError
+        ? WINDOW_SIZE_ERROR_WITH_ACTION
+        : WINDOW_SIZE_ERROR;
       window.electronAPI.centerWindow(size.width, size.height);
     } else {
-      window.electronAPI.setWindowSize(size.width, size.height);
+      const sizes = {
+        idle: WINDOW_SIZE_IDLE,
+        recording: WINDOW_SIZE_RECORDING,
+        transcribing: WINDOW_SIZE_TRANSCRIBING,
+        error: WINDOW_SIZE_ERROR,
+      };
+      window.electronAPI.setWindowSize(
+        sizes[overlayState].width,
+        sizes[overlayState].height,
+      );
     }
-  }, [overlayState]);
+  }, [overlayState, isPermissionError]);
 
   const handleCancel = useCallback(() => {
     isCancelledRef.current = true;
@@ -229,6 +240,15 @@ export const RecordingOverlay = () => {
 
   // Error State
   if (overlayState === "error" && error) {
+    const handleOpenSettings = () => {
+      if (isMicrophoneError) {
+        window.electronAPI.openMicrophoneSettings();
+      } else if (isAccessibilityError) {
+        window.electronAPI.openAccessibilitySettings();
+      }
+      handleDismissError();
+    };
+
     return (
       <div className="w-full h-full flex flex-col items-center justify-center glass-bg rounded-2xl border border-red-500/40 px-4 py-3 select-none [-webkit-app-region:drag] animate-fade-in">
         <div className="flex items-center gap-2">
@@ -239,13 +259,24 @@ export const RecordingOverlay = () => {
             </span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleDismissError}
-          className="mt-2 text-zinc-500 hover:text-white text-xs transition-colors [-webkit-app-region:no-drag]"
-        >
-          Close
-        </button>
+        <div className="flex items-center gap-3 mt-2 [-webkit-app-region:no-drag]">
+          {isPermissionError && (
+            <button
+              type="button"
+              onClick={handleOpenSettings}
+              className="px-3 py-1 text-violet-400 bg-violet-500/10 rounded-lg border border-violet-500/20 hover:bg-violet-500/20 text-xs transition-colors cursor-pointer"
+            >
+              設定を開く
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleDismissError}
+            className="text-zinc-500 hover:text-white text-xs transition-colors cursor-pointer"
+          >
+            閉じる
+          </button>
+        </div>
       </div>
     );
   }

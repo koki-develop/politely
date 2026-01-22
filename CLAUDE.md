@@ -83,6 +83,8 @@ src/
 │   └── channels.ts
 ├── state/               # 状態管理
 │   └── appState.ts      # AppStateManager（状態マシン）
+├── permissions/         # 権限管理
+│   └── service.ts       # macOS 権限チェック・リクエスト・設定を開く
 ├── settings/            # 設定管理
 │   ├── schema.ts        # Zod スキーマ・型定義
 │   └── store.ts         # electron-store ラッパー
@@ -130,6 +132,7 @@ src/
 - **状態同期**: Main Process が状態変更時に `state-changed` IPC で Renderer に通知
 - **Renderer**: `onStateChanged` で状態を購読し、ローカル状態を直接更新しない
 - **状態遷移検証**: `AppStateManager.transition()` で有効な遷移のみ許可
+- **新しい状態遷移の追加**: `src/state/appState.ts` の `VALID_TRANSITIONS` 配列に追加が必要
 
 ### データフロー
 
@@ -151,6 +154,14 @@ src/
 - **マイク権限**: 音声録音に必要
 - Dock アイコンは `app.dock.hide()` で非表示にしている
 
+### macOS 権限チェック
+
+- **権限チェック API**:
+  - アクセシビリティ: `systemPreferences.isTrustedAccessibilityClient(prompt)`
+  - マイク: `systemPreferences.getMediaAccessStatus("microphone")` / `askForMediaAccess("microphone")`
+- **システム設定を開く**: `shell.openExternal("x-apple.systempreferences:com.apple.preference.security?Privacy_*")`
+- **Info.plist**: `forge.config.ts` の `packagerConfig.extendInfo` に `NSMicrophoneUsageDescription` を設定
+
 ### コードスタイル（Biome）
 
 - インデント: スペース
@@ -162,6 +173,8 @@ src/
 
 - **ミニマル**: 状態を表すテキスト（"Ready", "Recording" 等）は不要、アイコンやビジュアルのみで表現
 - **コンパクト**: フローティングウィンドウは極力小さく、邪魔にならないサイズに
+- **エラーメッセージ**: 簡潔な文調で統一（例: 「〜へのアクセスを許可してください。」）
+- **エラーからのアクション導線**: エラー表示には解決への導線（設定を開くボタン等）を提供する
 
 ### OpenAI API 使用方針
 

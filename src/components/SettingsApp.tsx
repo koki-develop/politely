@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
+import type { PermissionsState } from "../permissions/service";
 import {
   type AppSettings,
   DEFAULT_SHORTCUT,
@@ -10,12 +11,14 @@ import {
 } from "../settings/schema";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
+import { PermissionStatus } from "./PermissionStatus";
 import { ShortcutInput } from "./ShortcutInput";
 import { ToggleSwitch } from "./ToggleSwitch";
 
 export const SettingsApp = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [shortcutError, setShortcutError] = useState<string | null>(null);
+  const [permissions, setPermissions] = useState<PermissionsState | null>(null);
 
   useEffect(() => {
     window.settingsAPI.requestSettings();
@@ -34,6 +37,19 @@ export const SettingsApp = () => {
         IPC_MAIN_TO_RENDERER.SHORTCUT_ERROR,
       );
     };
+  }, []);
+
+  // 権限状態をチェック（2秒間隔でポーリング）
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const perms = await window.settingsAPI.checkPermissions();
+      setPermissions(perms);
+    };
+
+    checkPermissions();
+
+    const interval = setInterval(checkPermissions, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleWhisperModelChange = useCallback((model: WhisperModel) => {
@@ -170,6 +186,40 @@ export const SettingsApp = () => {
             {shortcutError && (
               <p className="text-[11px] text-red-400 mt-2">{shortcutError}</p>
             )}
+          </div>
+        </div>
+
+        {/* Permissions Section */}
+        <div className="mb-6 mt-8">
+          <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
+            権限
+          </h1>
+          <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
+            Politely が正しく動作するために必要な権限です
+          </p>
+        </div>
+
+        <div className="space-y-5">
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <div className="space-y-4">
+              <PermissionStatus
+                label="マイク"
+                description="音声の録音に使用します"
+                status={permissions?.microphone ?? "unknown"}
+                onOpenSettings={() =>
+                  window.settingsAPI.openMicrophoneSettings()
+                }
+              />
+              <div className="border-t border-zinc-700/30" />
+              <PermissionStatus
+                label="アクセシビリティ"
+                description="テキストの自動入力に使用します"
+                status={permissions?.accessibility ?? "unknown"}
+                onOpenSettings={() =>
+                  window.settingsAPI.openAccessibilitySettings()
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

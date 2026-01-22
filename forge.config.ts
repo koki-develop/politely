@@ -11,6 +11,10 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     extraResource: ["assets"],
+    extendInfo: {
+      NSMicrophoneUsageDescription:
+        "Politely は音声入力のためにマイクを使用します。",
+    },
   },
   rebuildConfig: {},
   makers: [

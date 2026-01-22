@@ -15,6 +15,8 @@ export const IPC_MAIN_TO_RENDERER = {
 // Invoke channels (Renderer -> Main with response)
 export const IPC_INVOKE = {
   TRANSCRIBE: "transcribe",
+  CHECK_PERMISSIONS: "check-permissions",
+  REQUEST_MICROPHONE_PERMISSION: "request-microphone-permission",
 } as const;
 
 // Renderer -> Main channels
@@ -33,6 +35,9 @@ export const IPC_RENDERER_TO_MAIN = {
   // Shortcut capture
   SHORTCUT_CAPTURE_START: "shortcut-capture-start",
   SHORTCUT_CAPTURE_END: "shortcut-capture-end",
+  // Permissions
+  OPEN_ACCESSIBILITY_SETTINGS: "open-accessibility-settings",
+  OPEN_MICROPHONE_SETTINGS: "open-microphone-settings",
 } as const;
 
 // Type exports

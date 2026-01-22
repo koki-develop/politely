@@ -24,6 +24,14 @@ import {
   startActiveAppTracking,
   stopActiveAppTracking,
 } from "./pasteService";
+import {
+  checkAccessibilityPermission,
+  checkAllPermissions,
+  checkMicrophonePermission,
+  openAccessibilitySettings,
+  openMicrophoneSettings,
+  requestMicrophonePermission,
+} from "./permissions/service";
 import type { AppSettings } from "./settings/schema";
 import { getSettings, updateSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
@@ -102,6 +110,45 @@ function handleShortcutPress() {
       const settings = getSettings();
       if (!settings.apiKey) {
         openSettingsWindow();
+        return;
+      }
+
+      // 権限チェック
+      const micPermission = checkMicrophonePermission();
+
+      // マイク権限がない場合
+      if (micPermission !== "granted") {
+        if (micPermission === "not-determined") {
+          // 初回の場合はリクエスト
+          requestMicrophonePermission().then((granted) => {
+            if (granted) {
+              // 権限が付与されたら再度処理を実行
+              handleShortcutPress();
+            } else {
+              appStateManager.transition(
+                "error",
+                "マイクへのアクセスを許可してください。",
+              );
+            }
+          });
+        } else {
+          appStateManager.transition(
+            "error",
+            "マイクへのアクセスを許可してください。",
+          );
+        }
+        return;
+      }
+
+      // アクセシビリティ権限がない場合（ペースト時に必要）
+      const accessibilityPermission = checkAccessibilityPermission(false);
+      if (accessibilityPermission !== "granted") {
+        // プロンプトを表示して権限をリクエスト
+        checkAccessibilityPermission(true);
+        appStateManager.transition(
+          "error",
+          "アクセシビリティへのアクセスを許可してください。",
+        );
         return;
       }
 
@@ -263,6 +310,23 @@ function setupIpcHandlers() {
       return await transcribe(audioData);
     },
   );
+
+  // Permissions IPC handlers
+  ipcMain.handle(IPC_INVOKE.CHECK_PERMISSIONS, () => {
+    return checkAllPermissions();
+  });
+
+  ipcMain.handle(IPC_INVOKE.REQUEST_MICROPHONE_PERMISSION, async () => {
+    return await requestMicrophonePermission();
+  });
+
+  ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_ACCESSIBILITY_SETTINGS, () => {
+    openAccessibilitySettings();
+  });
+
+  ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS, () => {
+    openMicrophoneSettings();
+  });
 }
 
 app.on("ready", async () => {

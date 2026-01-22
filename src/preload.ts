@@ -48,6 +48,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openSettings: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS);
   },
+  openAccessibilitySettings: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_ACCESSIBILITY_SETTINGS);
+  },
+  openMicrophoneSettings: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS);
+  },
 
   transcribe: (audioData: ArrayBuffer): Promise<TranscribeResult> => {
     return ipcRenderer.invoke(IPC_INVOKE.TRANSCRIBE, audioData);

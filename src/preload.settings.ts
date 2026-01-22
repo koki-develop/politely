@@ -1,5 +1,10 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { IPC_MAIN_TO_RENDERER, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
+import {
+  IPC_INVOKE,
+  IPC_MAIN_TO_RENDERER,
+  IPC_RENDERER_TO_MAIN,
+} from "./ipc/channels";
+import type { PermissionsState } from "./permissions/service";
 import type { AppSettings } from "./settings/schema";
 
 contextBridge.exposeInMainWorld("settingsAPI", {
@@ -29,5 +34,18 @@ contextBridge.exposeInMainWorld("settingsAPI", {
   },
   endShortcutCapture: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_END);
+  },
+  // Permissions
+  checkPermissions: (): Promise<PermissionsState> => {
+    return ipcRenderer.invoke(IPC_INVOKE.CHECK_PERMISSIONS);
+  },
+  requestMicrophonePermission: (): Promise<boolean> => {
+    return ipcRenderer.invoke(IPC_INVOKE.REQUEST_MICROPHONE_PERMISSION);
+  },
+  openAccessibilitySettings: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_ACCESSIBILITY_SETTINGS);
+  },
+  openMicrophoneSettings: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS);
   },
 });

@@ -1,5 +1,6 @@
 import type { AppState } from "../state/appState";
 import type { MainToRendererChannel } from "../ipc/channels";
+import type { PermissionsState } from "../permissions/service";
 import type { AppSettings } from "../settings/schema";
 
 export type StateChangePayload = {
@@ -30,6 +31,8 @@ export interface ElectronAPI {
   setWindowSize: (width: number, height: number) => void;
   centerWindow: (width: number, height: number) => void;
   openSettings: () => void;
+  openAccessibilitySettings: () => void;
+  openMicrophoneSettings: () => void;
 
   // Invoke (async with response)
   transcribe: (audioData: ArrayBuffer) => Promise<TranscribeResult>;
@@ -48,6 +51,11 @@ export interface SettingsElectronAPI {
   // Shortcut capture
   startShortcutCapture: () => void;
   endShortcutCapture: () => void;
+  // Permissions
+  checkPermissions: () => Promise<PermissionsState>;
+  requestMicrophonePermission: () => Promise<boolean>;
+  openAccessibilitySettings: () => void;
+  openMicrophoneSettings: () => void;
 }
 
 declare global {

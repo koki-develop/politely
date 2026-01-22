@@ -13,6 +13,7 @@ type StateTransition = {
 // Valid state transitions
 const VALID_TRANSITIONS: StateTransition[] = [
   { from: "idle", to: "recording" },
+  { from: "idle", to: "error" }, // Permission error
   { from: "recording", to: "transcribing" },
   { from: "recording", to: "idle" }, // Cancel
   { from: "transcribing", to: "idle" },

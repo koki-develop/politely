@@ -7,6 +7,9 @@ import {
 
 // electron-store のスキーマ定義
 const schema = {
+  apiKey: {
+    type: "string" as const,
+  },
   whisperModel: {
     type: "string" as const,
     default: DEFAULT_SETTINGS.whisperModel,
@@ -35,25 +38,38 @@ export function getSettingsStore(): Store<AppSettings> {
 export function getSettings(): AppSettings {
   const s = getSettingsStore();
   return {
+    apiKey: s.get("apiKey"),
     whisperModel: s.get("whisperModel"),
     gptModel: s.get("gptModel"),
   };
 }
 
 // 設定の更新ヘルパー
-export function updateSettings(settings: Partial<AppSettings>): void {
+export function updateSettings(
+  settings: Partial<AppSettings>,
+): { success: true } | { success: false; error: string } {
   const result = AppSettingsSchema.partial().safeParse(settings);
   if (!result.success) {
-    console.warn("[Settings] Invalid settings:", result.error.format());
-    return;
+    const error = JSON.stringify(result.error.format());
+    console.error("[Settings] Invalid settings:", error);
+    return { success: false, error };
   }
 
   const s = getSettingsStore();
   const validated = result.data;
+  if ("apiKey" in validated) {
+    if (validated.apiKey) {
+      s.set("apiKey", validated.apiKey);
+    } else {
+      s.delete("apiKey");
+    }
+  }
   if (validated.whisperModel !== undefined) {
     s.set("whisperModel", validated.whisperModel);
   }
   if (validated.gptModel !== undefined) {
     s.set("gptModel", validated.gptModel);
   }
+
+  return { success: true };
 }

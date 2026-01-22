@@ -7,6 +7,7 @@ import {
   WHISPER_MODELS,
   type WhisperModel,
 } from "../settings/schema";
+import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
 
 export const SettingsApp = () => {
@@ -32,6 +33,10 @@ export const SettingsApp = () => {
     window.settingsAPI.updateSettings({ gptModel: model });
   }, []);
 
+  const handleApiKeyChange = useCallback((apiKey: string) => {
+    window.settingsAPI.updateSettings({ apiKey });
+  }, []);
+
   if (!settings) {
     return (
       <div className="h-screen bg-zinc-900 flex items-center justify-center">
@@ -50,7 +55,27 @@ export const SettingsApp = () => {
 
       {/* Content */}
       <div className="flex-1 px-6 pb-6 overflow-auto">
-        {/* Header */}
+        {/* API Key Section */}
+        <div className="mb-6">
+          <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
+            API Key
+          </h1>
+          <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
+            Configure your OpenAI API key for authentication
+          </p>
+        </div>
+
+        <div className="space-y-5 mb-8">
+          {/* API Key */}
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <ApiKeyInput
+              value={settings.apiKey ?? ""}
+              onChange={handleApiKeyChange}
+            />
+          </div>
+        </div>
+
+        {/* Models Section */}
         <div className="mb-6">
           <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
             Models

@@ -20,6 +20,7 @@ export interface ElectronAPI {
   sendRecordingError: (error: string) => void;
   sendErrorDismissed: () => void;
   setWindowSize: (width: number, height: number) => void;
+  openSettings: () => void;
 
   // Cleanup
   removeAllListeners: (channel: MainToRendererChannel) => void;

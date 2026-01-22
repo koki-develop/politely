@@ -22,6 +22,7 @@ export const IPC_RENDERER_TO_MAIN = {
   // Settings
   GET_SETTINGS: "get-settings",
   UPDATE_SETTINGS: "update-settings",
+  OPEN_SETTINGS: "open-settings",
 } as const;
 
 // Type exports

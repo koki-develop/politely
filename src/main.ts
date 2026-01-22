@@ -14,7 +14,13 @@ import {
 } from "./globalShortcut";
 import { IPC_MAIN_TO_RENDERER, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
 import { pasteText, savePreviousApp } from "./pasteService";
-import { generateAuthToken, startServer, stopServer } from "./server";
+import {
+  generateAuthToken,
+  initializeOpenAI,
+  resetOpenAI,
+  startServer,
+  stopServer,
+} from "./server";
 import type { AppSettings } from "./settings/schema";
 import { getSettings, updateSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
@@ -37,10 +43,7 @@ function createTray() {
       { type: "separator" },
       {
         label: "Settings...",
-        click: () => {
-          const preloadPath = path.join(__dirname, "preload.settings.js");
-          createSettingsWindow(preloadPath);
-        },
+        click: openSettingsWindow,
       },
       { type: "separator" },
       { label: "Quit", click: () => app.quit() },
@@ -61,6 +64,11 @@ function broadcastStateChange() {
   });
 }
 
+function openSettingsWindow() {
+  const preloadPath = path.join(__dirname, "preload.settings.js");
+  createSettingsWindow(preloadPath);
+}
+
 async function handleShortcutPress() {
   const floatingWindow = getFloatingWindow();
   if (!floatingWindow) return;
@@ -69,11 +77,20 @@ async function handleShortcutPress() {
 
   switch (currentState) {
     case "idle":
+    case "error": {
+      // APIキー未設定の場合は設定画面を開く
+      const settings = getSettings();
+      if (!settings.apiKey) {
+        openSettingsWindow();
+        return;
+      }
+
       await savePreviousApp();
       if (appStateManager.transition("recording")) {
         floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
       }
       break;
+    }
 
     case "recording":
       if (appStateManager.transition("transcribing")) {
@@ -83,14 +100,6 @@ async function handleShortcutPress() {
 
     case "transcribing":
       // 文字起こし中は何もしない
-      break;
-
-    case "error":
-      // エラー表示中はエラーをクリアして録音を開始
-      await savePreviousApp();
-      if (appStateManager.transition("recording")) {
-        floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
-      }
       break;
   }
 }
@@ -142,17 +151,40 @@ function setupIpcHandlers() {
   ipcMain.on(
     IPC_RENDERER_TO_MAIN.UPDATE_SETTINGS,
     (event, newSettings: Partial<AppSettings>) => {
+      const oldSettings = getSettings();
       updateSettings(newSettings);
+
+      // APIキーが変更された場合、OpenAIクライアントを更新
+      if (
+        "apiKey" in newSettings &&
+        newSettings.apiKey !== oldSettings.apiKey
+      ) {
+        if (newSettings.apiKey) {
+          initializeOpenAI(newSettings.apiKey);
+        } else {
+          resetOpenAI();
+        }
+      }
+
       const settings = getSettings();
       event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
     },
   );
+
+  // 設定画面を開く
+  ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS, openSettingsWindow);
 }
 
 app.on("ready", async () => {
   // macOS: Dock アイコンを隠す
   if (process.platform === "darwin") {
     app.dock.hide();
+  }
+
+  // 保存済みAPIキーでOpenAIクライアントを初期化
+  const settings = getSettings();
+  if (settings.apiKey) {
+    initializeOpenAI(settings.apiKey);
   }
 
   const authToken = generateAuthToken();

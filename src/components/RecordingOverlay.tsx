@@ -110,6 +110,11 @@ export const RecordingOverlay = () => {
       const data: TranscribeResponse = await response.json();
 
       if (!response.ok) {
+        if (data.error === "API_KEY_NOT_CONFIGURED") {
+          window.electronAPI.openSettings();
+          window.electronAPI.sendRecordingError("API key not configured");
+          return;
+        }
         throw new Error(data.error || "Transcription failed");
       }
 

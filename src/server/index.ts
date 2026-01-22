@@ -10,7 +10,22 @@ import { getSettings } from "../settings/store";
 
 const app = new Hono();
 
-const openai = new OpenAI();
+let openaiClient: OpenAI | null = null;
+
+export function initializeOpenAI(apiKey: string): void {
+  openaiClient = new OpenAI({ apiKey });
+}
+
+export function resetOpenAI(): void {
+  openaiClient = null;
+}
+
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    throw new Error("API_KEY_NOT_CONFIGURED");
+  }
+  return openaiClient;
+}
 
 let authToken: string | null = null;
 
@@ -23,36 +38,35 @@ const PoliteTextSchema = z.object({
  * テキストを丁寧語に変換する
  */
 const convertToPolite = async (text: string): Promise<string> => {
-  try {
-    const { gptModel } = getSettings();
-    const completion = await openai.chat.completions.parse({
-      model: gptModel,
-      messages: [
-        {
-          role: "system",
-          content:
-            "あなたは日本語のテキストを丁寧語に変換するアシスタントです。入力されたテキストを「です」「ます」調の丁寧語に変換してください。意味や内容は変えず、語調のみを丁寧にしてください。",
-        },
-        {
-          role: "user",
-          content: text,
-        },
-      ],
-      response_format: zodResponseFormat(PoliteTextSchema, "polite_text"),
-    });
+  const openai = getOpenAI();
+  const { gptModel } = getSettings();
+  const completion = await openai.chat.completions.parse({
+    model: gptModel,
+    messages: [
+      {
+        role: "system",
+        content:
+          "あなたは日本語のテキストを丁寧語に変換するアシスタントです。入力されたテキストを「です」「ます」調の丁寧語に変換してください。意味や内容は変えず、語調のみを丁寧にしてください。",
+      },
+      {
+        role: "user",
+        content: text,
+      },
+    ],
+    response_format: zodResponseFormat(PoliteTextSchema, "polite_text"),
+  });
 
-    const message = completion.choices[0]?.message;
-    if (message?.parsed) {
-      return message.parsed.text;
-    }
+  const message = completion.choices[0]?.message;
 
-    // パース失敗時はフォールバック
-    return text;
-  } catch (error) {
-    console.error("[ConvertToPolite Error]", error);
-    // エラー時は元のテキストを返す
-    return text;
+  if (message?.refusal) {
+    throw new Error(`Model refused: ${message.refusal}`);
   }
+
+  if (!message?.parsed) {
+    throw new Error("Failed to parse polite text response");
+  }
+
+  return message.parsed.text;
 };
 
 export const generateAuthToken = (): string => {
@@ -97,6 +111,7 @@ app.post("/api/transcribe", async (c) => {
     }
 
     // 1. 音声文字起こし
+    const openai = getOpenAI();
     const { whisperModel } = getSettings();
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
@@ -111,6 +126,10 @@ app.post("/api/transcribe", async (c) => {
     return c.json({ text: politeText });
   } catch (error) {
     console.error("[Transcribe Error]", error);
+
+    if (error instanceof Error && error.message === "API_KEY_NOT_CONFIGURED") {
+      return c.json({ error: "API_KEY_NOT_CONFIGURED" }, 400);
+    }
 
     if (error instanceof OpenAI.APIError) {
       return c.json(

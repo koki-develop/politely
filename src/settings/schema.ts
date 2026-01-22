@@ -23,6 +23,7 @@ export type GptModel = z.infer<typeof GptModelSchema>;
 
 // 設定スキーマ
 export const AppSettingsSchema = z.object({
+  apiKey: z.string().optional(),
   whisperModel: WhisperModelSchema,
   gptModel: GptModelSchema,
 });
@@ -30,6 +31,7 @@ export type AppSettings = z.infer<typeof AppSettingsSchema>;
 
 // デフォルト設定
 export const DEFAULT_SETTINGS: AppSettings = {
+  apiKey: undefined,
   whisperModel: "whisper-1",
   gptModel: "gpt-4.1-mini",
 };

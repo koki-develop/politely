@@ -39,6 +39,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   setWindowSize: (width: number, height: number) => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.SET_WINDOW_SIZE, width, height);
   },
+  centerWindow: (width: number, height: number) => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.CENTER_WINDOW, width, height);
+  },
   openSettings: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS);
   },

@@ -23,6 +23,7 @@ export const IPC_RENDERER_TO_MAIN = {
   RECORDING_ERROR: "recording-error",
   ERROR_DISMISSED: "error-dismissed",
   SET_WINDOW_SIZE: "set-window-size",
+  CENTER_WINDOW: "center-window",
   // Settings
   GET_SETTINGS: "get-settings",
   UPDATE_SETTINGS: "update-settings",

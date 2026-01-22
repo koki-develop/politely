@@ -83,6 +83,17 @@ export function resizeFloatingWindow(width: number, height: number): void {
   floatingWindow.setBounds({ x, y, width, height });
 }
 
+export function centerFloatingWindow(width: number, height: number): void {
+  if (!floatingWindow) return;
+
+  const { width: screenWidth, height: screenHeight } =
+    screen.getPrimaryDisplay().workAreaSize;
+  const x = Math.floor((screenWidth - width) / 2);
+  const y = Math.floor((screenHeight - height) / 2);
+
+  floatingWindow.setBounds({ x, y, width, height });
+}
+
 export function destroyFloatingWindow(): void {
   if (floatingWindow && !floatingWindow.isDestroyed()) {
     floatingWindow.close();

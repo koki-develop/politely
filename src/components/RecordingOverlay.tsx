@@ -10,7 +10,7 @@ type OverlayState = AppState;
 const WINDOW_SIZE_IDLE = { width: 130, height: 32 };
 const WINDOW_SIZE_RECORDING = { width: 120, height: 32 };
 const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 32 };
-const WINDOW_SIZE_ERROR = { width: 200, height: 70 };
+const WINDOW_SIZE_ERROR = { width: 280, height: 100 };
 
 // Static SVG Icons (hoisted to avoid re-creation on each render)
 const micIcon = (
@@ -148,7 +148,12 @@ export const RecordingOverlay = () => {
       error: WINDOW_SIZE_ERROR,
     };
     const size = sizes[overlayState];
-    window.electronAPI.setWindowSize(size.width, size.height);
+    if (overlayState === "error") {
+      // エラー状態では画面中央に配置
+      window.electronAPI.centerWindow(size.width, size.height);
+    } else {
+      window.electronAPI.setWindowSize(size.width, size.height);
+    }
   }, [overlayState]);
 
   const handleCancel = useCallback(() => {
@@ -211,11 +216,11 @@ export const RecordingOverlay = () => {
   // Error State
   if (overlayState === "error" && error) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center glass-bg rounded-full border border-red-500/40 px-3 py-2 select-none [-webkit-app-region:drag] animate-fade-in">
+      <div className="w-full h-full flex flex-col items-center justify-center glass-bg rounded-2xl border border-red-500/40 px-4 py-3 select-none [-webkit-app-region:drag] animate-fade-in">
         <div className="flex items-center gap-2">
           {alertIcon}
-          <div className="max-h-8 overflow-y-auto [-webkit-app-region:no-drag]">
-            <span className="text-red-400 text-[10px] break-all block">
+          <div className="max-h-12 overflow-y-auto [-webkit-app-region:no-drag]">
+            <span className="text-red-400 text-xs break-all block">
               {error}
             </span>
           </div>
@@ -223,7 +228,7 @@ export const RecordingOverlay = () => {
         <button
           type="button"
           onClick={handleDismissError}
-          className="text-zinc-500 hover:text-white text-[10px] transition-colors [-webkit-app-region:no-drag]"
+          className="mt-2 text-zinc-500 hover:text-white text-xs transition-colors [-webkit-app-region:no-drag]"
         >
           Close
         </button>

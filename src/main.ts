@@ -2,6 +2,7 @@ import path from "node:path";
 import { app, ipcMain, Menu, Tray } from "electron";
 import started from "electron-squirrel-startup";
 import {
+  centerFloatingWindow,
   createFloatingWindow,
   destroyFloatingWindow,
   getFloatingWindow,
@@ -142,6 +143,13 @@ function setupIpcHandlers() {
     IPC_RENDERER_TO_MAIN.SET_WINDOW_SIZE,
     (_event, width: number, height: number) => {
       resizeFloatingWindow(width, height);
+    },
+  );
+
+  ipcMain.on(
+    IPC_RENDERER_TO_MAIN.CENTER_WINDOW,
+    (_event, width: number, height: number) => {
+      centerFloatingWindow(width, height);
     },
   );
 

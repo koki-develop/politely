@@ -27,6 +27,7 @@ export interface ElectronAPI {
   sendRecordingError: (error: string) => void;
   sendErrorDismissed: () => void;
   setWindowSize: (width: number, height: number) => void;
+  centerWindow: (width: number, height: number) => void;
   openSettings: () => void;
 
   // Invoke (async with response)

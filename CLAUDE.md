@@ -10,7 +10,7 @@ Politely は Electron + React + TypeScript で構築された macOS 向けトレ
 
 - **Runtime**: Electron 40 (Electron Forge でビルド)
 - **Frontend**: React 19 + React Compiler (babel-plugin-react-compiler)
-- **Backend**: Hono + @hono/node-server (メインプロセス内で起動)
+- **Transcription**: OpenAI API (Main Process 内で直接呼び出し)
 - **Styling**: Tailwind CSS v4 (Vite plugin)
 - **Build Tool**: Vite 6
 - **Package Manager**: Bun
@@ -57,11 +57,11 @@ bun run make
 
 ### Electron プロセス構成
 
-- **Main Process** (`src/main.ts`): トレイアイコン、グローバルショートカット、IPC ハンドラ、Hono サーバーの起動
+- **Main Process** (`src/main.ts`): トレイアイコン、グローバルショートカット、IPC ハンドラ
   - `AppState` 状態マシン（`idle | recording | transcribing | error`）でアプリ状態を管理
 - **Preload Script** (`src/preload.ts`): contextBridge による IPC ブリッジ
 - **Overlay Renderer** (`src/overlay.tsx`): フローティングウィンドウの React エントリーポイント
-- **API Server** (`src/server/index.ts`): Hono ベースの HTTP サーバー（localhost:3001）
+- **Transcription Service** (`src/transcription/service.ts`): OpenAI API を使用した文字起こし処理
 
 ### ディレクトリ構成
 
@@ -77,8 +77,8 @@ src/
 ├── settingsWindow.ts    # 設定ウィンドウ管理
 ├── globalShortcut.ts    # グローバルショートカット管理
 ├── pasteService.ts      # クリップボード + ペースト処理
-├── server/              # Hono API サーバー
-│   └── index.ts
+├── transcription/       # 文字起こし処理
+│   └── service.ts       # OpenAI API を使用した文字起こし + 丁寧語変換
 ├── ipc/                 # IPC チャンネル定数（型安全な IPC 通信）
 │   └── channels.ts
 ├── state/               # 状態管理
@@ -91,7 +91,9 @@ src/
 ├── components/          # React コンポーネント
 │   ├── RecordingOverlay.tsx
 │   ├── SettingsApp.tsx
-│   └── ModelSelector.tsx
+│   ├── ModelSelector.tsx
+│   ├── ApiKeyInput.tsx
+│   └── ToggleSwitch.tsx
 └── types/               # 型定義
     └── electron.d.ts
 ```
@@ -133,18 +135,14 @@ src/
 1. `Cmd+Shift+Space` → Main Process がアクティブアプリを記録
 2. フローティングウィンドウ表示 → 録音開始
 3. 再度 `Cmd+Shift+Space` → 録音停止
-4. 音声を Hono サーバー経由で Whisper API に送信
+4. 音声を IPC 経由で Main Process に送信、Whisper API で文字起こし + GPT で丁寧語変換
 5. 文字起こし結果をクリップボードに書き込み
 6. AppleScript で元のアプリをアクティブにして `Cmd+V` をシミュレート
 
 ### セキュリティ方針
 
-- API キーなどの機密情報はメインプロセス（Hono サーバー）側で管理し、レンダラーには露出させない
-- 外部 API 呼び出しは Hono サーバーを経由して行う
-- localhost HTTP サーバーはトークン認証で保護（悪意のあるローカルプロセスからの API 濫用を防止）
-  - アプリ起動時にランダムトークンを生成（`generateAuthToken()`）
-  - IPC でレンダラーにトークンを送信（`auth-token` イベント）
-  - HTTP リクエストは `X-Auth-Token` ヘッダーで認証
+- API キーなどの機密情報はメインプロセス側で管理し、レンダラーには露出させない
+- 外部 API 呼び出しは IPC 経由で Main Process 内で実行する（`ipcRenderer.invoke` → `ipcMain.handle`）
 
 ### macOS 固有の要件
 

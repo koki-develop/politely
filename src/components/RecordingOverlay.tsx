@@ -182,7 +182,7 @@ export const RecordingOverlay = () => {
   // Recording State
   if (overlayState === "recording") {
     return (
-      <div className="w-full h-full flex items-center justify-center gap-3 glass-bg rounded-full border border-red-500/30 select-none [-webkit-app-region:drag] animate-fade-in">
+      <div className="w-full h-full flex items-center justify-center gap-3 glass-bg rounded-full border border-red-500/30 select-none [-webkit-app-region:drag]">
         {/* Pulse Ring */}
         <div className="relative flex items-center justify-center">
           <div className="absolute w-4 h-4 rounded-full bg-gradient-to-r from-red-500/40 to-orange-500/40 animate-pulse-ring" />
@@ -202,7 +202,7 @@ export const RecordingOverlay = () => {
   // Transcribing State
   if (overlayState === "transcribing") {
     return (
-      <div className="w-full h-full flex items-center justify-center glass-bg rounded-full border border-amber-500/30 select-none [-webkit-app-region:drag] animate-fade-in">
+      <div className="w-full h-full flex items-center justify-center glass-bg rounded-full border border-amber-500/30 select-none [-webkit-app-region:drag]">
         {/* Wave Dots */}
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave" />

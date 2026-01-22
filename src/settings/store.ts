@@ -18,6 +18,10 @@ const schema = {
     type: "string" as const,
     default: DEFAULT_SETTINGS.gptModel,
   },
+  showWindowOnIdle: {
+    type: "boolean" as const,
+    default: DEFAULT_SETTINGS.showWindowOnIdle,
+  },
 };
 
 // シングルトンインスタンス
@@ -41,6 +45,7 @@ export function getSettings(): AppSettings {
     apiKey: s.get("apiKey"),
     whisperModel: s.get("whisperModel"),
     gptModel: s.get("gptModel"),
+    showWindowOnIdle: s.get("showWindowOnIdle"),
   };
 }
 
@@ -69,6 +74,9 @@ export function updateSettings(
   }
   if (validated.gptModel !== undefined) {
     s.set("gptModel", validated.gptModel);
+  }
+  if (validated.showWindowOnIdle !== undefined) {
+    s.set("showWindowOnIdle", validated.showWindowOnIdle);
   }
 
   return { success: true };

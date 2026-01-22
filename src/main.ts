@@ -5,6 +5,7 @@ import {
   createFloatingWindow,
   destroyFloatingWindow,
   getFloatingWindow,
+  hideFloatingWindow,
   resizeFloatingWindow,
   showFloatingWindow,
 } from "./floatingWindow";
@@ -168,6 +169,21 @@ function setupIpcHandlers() {
         }
       }
 
+      // showWindowOnIdleが変更された場合、即座に反映
+      if (
+        "showWindowOnIdle" in newSettings &&
+        newSettings.showWindowOnIdle !== oldSettings.showWindowOnIdle
+      ) {
+        const currentState = appStateManager.getState();
+        if (currentState === "idle") {
+          if (newSettings.showWindowOnIdle) {
+            showFloatingWindow();
+          } else {
+            hideFloatingWindow();
+          }
+        }
+      }
+
       const settings = getSettings();
       event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
     },
@@ -203,15 +219,32 @@ app.on("ready", async () => {
   createFloatingWindow(preloadPath);
 
   // 状態変更時にRendererへブロードキャスト
-  appStateManager.subscribe(() => {
+  appStateManager.subscribe((state) => {
     broadcastStateChange();
+
+    // Idle状態のときの表示制御
+    if (state === "idle") {
+      const settings = getSettings();
+      if (settings.showWindowOnIdle) {
+        showFloatingWindow();
+      } else {
+        hideFloatingWindow();
+      }
+    } else {
+      // 非Idle状態（recording, transcribing, error）では常に表示
+      showFloatingWindow();
+    }
   });
 
   // ウィンドウ読み込み完了後にIdle状態でウィンドウを表示
   getFloatingWindow()?.webContents.on("did-finish-load", () => {
     // 初期状態を送信
     broadcastStateChange();
-    showFloatingWindow();
+    // 設定に応じて表示
+    const settings = getSettings();
+    if (settings.showWindowOnIdle) {
+      showFloatingWindow();
+    }
   });
 
   setupIpcHandlers();

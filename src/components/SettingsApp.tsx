@@ -9,6 +9,7 @@ import {
 } from "../settings/schema";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
+import { ToggleSwitch } from "./ToggleSwitch";
 
 export const SettingsApp = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -35,6 +36,10 @@ export const SettingsApp = () => {
 
   const handleApiKeyChange = useCallback((apiKey: string) => {
     window.settingsAPI.updateSettings({ apiKey });
+  }, []);
+
+  const handleShowWindowOnIdleChange = useCallback((checked: boolean) => {
+    window.settingsAPI.updateSettings({ showWindowOnIdle: checked });
   }, []);
 
   if (!settings) {
@@ -106,6 +111,27 @@ export const SettingsApp = () => {
               value={settings.gptModel}
               options={GPT_MODELS}
               onChange={handleGptModelChange}
+            />
+          </div>
+        </div>
+
+        {/* Appearance Section */}
+        <div className="mb-6 mt-8">
+          <h1 className="text-[15px] font-semibold text-zinc-100 tracking-[-0.02em]">
+            Appearance
+          </h1>
+          <p className="text-[11px] text-zinc-500 mt-1 tracking-[-0.01em]">
+            Configure how Politely appears on your screen
+          </p>
+        </div>
+
+        <div className="space-y-5">
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <ToggleSwitch
+              label="Show Window When Idle"
+              description="Display the floating window when not recording"
+              checked={settings.showWindowOnIdle}
+              onChange={handleShowWindowOnIdleChange}
             />
           </div>
         </div>

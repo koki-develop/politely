@@ -68,6 +68,10 @@ export function showFloatingWindow(): void {
   floatingWindow?.showInactive();
 }
 
+export function hideFloatingWindow(): void {
+  floatingWindow?.hide();
+}
+
 export function resizeFloatingWindow(width: number, height: number): void {
   if (!floatingWindow) return;
 

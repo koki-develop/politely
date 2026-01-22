@@ -12,16 +12,15 @@ import {
   registerGlobalShortcut,
   unregisterAllShortcuts,
 } from "./globalShortcut";
+import { IPC_MAIN_TO_RENDERER, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
 import { pasteText, savePreviousApp } from "./pasteService";
 import { generateAuthToken, startServer, stopServer } from "./server";
+import { appStateManager } from "./state/appState";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
 }
-
-type AppState = "idle" | "recording" | "transcribing" | "error";
-let appState: AppState = "idle";
 
 let tray: Tray | null = null;
 
@@ -38,21 +37,37 @@ function createTray() {
   );
 }
 
+/**
+ * Broadcast state change to renderer
+ */
+function broadcastStateChange() {
+  const floatingWindow = getFloatingWindow();
+  if (!floatingWindow) return;
+
+  floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.STATE_CHANGED, {
+    state: appStateManager.getState(),
+    error: appStateManager.getError(),
+  });
+}
+
 async function handleShortcutPress() {
   const floatingWindow = getFloatingWindow();
   if (!floatingWindow) return;
 
-  switch (appState) {
+  const currentState = appStateManager.getState();
+
+  switch (currentState) {
     case "idle":
       await savePreviousApp();
-      appState = "recording";
-      // ウィンドウは既にIdle状態で表示されているため、直接録音開始メッセージを送信
-      floatingWindow.webContents.send("start-recording");
+      if (appStateManager.transition("recording")) {
+        floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
+      }
       break;
 
     case "recording":
-      appState = "transcribing";
-      floatingWindow.webContents.send("stop-recording");
+      if (appStateManager.transition("transcribing")) {
+        floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.STOP_RECORDING);
+      }
       break;
 
     case "transcribing":
@@ -62,50 +77,50 @@ async function handleShortcutPress() {
     case "error":
       // エラー表示中はエラーをクリアして録音を開始
       await savePreviousApp();
-      appState = "recording";
-      // ウィンドウはすでに表示されているので、直接録音開始メッセージを送信
-      floatingWindow.webContents.send("start-recording");
+      if (appStateManager.transition("recording")) {
+        floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
+      }
       break;
   }
 }
 
 function setupIpcHandlers() {
-  ipcMain.on("transcription-complete", async (_event, text: string) => {
-    console.log("[Main] Transcription complete:", text);
+  ipcMain.on(
+    IPC_RENDERER_TO_MAIN.TRANSCRIPTION_COMPLETE,
+    async (_event, text: string) => {
+      console.log("[Main] Transcription complete:", text);
 
-    appState = "idle";
-    // レンダラー側でIdle状態に戻す（ウィンドウは表示したまま）
-    getFloatingWindow()?.webContents.send("reset-to-idle");
+      appStateManager.transition("idle");
 
-    try {
-      await pasteText(text);
-    } catch (error) {
-      console.error("[Main] Failed to paste:", error);
-    }
-  });
+      try {
+        await pasteText(text);
+      } catch (error) {
+        console.error("[Main] Failed to paste:", error);
+      }
+    },
+  );
 
-  ipcMain.on("recording-cancelled", () => {
+  ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_CANCELLED, () => {
     console.log("[Main] Recording cancelled");
-    appState = "idle";
-    // レンダラー側でIdle状態に戻す（ウィンドウは表示したまま）
-    getFloatingWindow()?.webContents.send("reset-to-idle");
+    appStateManager.transition("idle");
   });
 
-  ipcMain.on("recording-error", (_event, error: string) => {
+  ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_ERROR, (_event, error: string) => {
     console.error("[Main] Recording error:", error);
-    // エラー時はウィンドウを閉じず、エラー状態に遷移
-    appState = "error";
+    appStateManager.transition("error", error);
   });
 
-  ipcMain.on("error-dismissed", () => {
+  ipcMain.on(IPC_RENDERER_TO_MAIN.ERROR_DISMISSED, () => {
     console.log("[Main] Error dismissed");
-    appState = "idle";
-    // エラー dismiss 時もIdle状態に戻す（ウィンドウは表示したまま）
+    appStateManager.transition("idle");
   });
 
-  ipcMain.on("set-window-size", (_event, width: number, height: number) => {
-    resizeFloatingWindow(width, height);
-  });
+  ipcMain.on(
+    IPC_RENDERER_TO_MAIN.SET_WINDOW_SIZE,
+    (_event, width: number, height: number) => {
+      resizeFloatingWindow(width, height);
+    },
+  );
 }
 
 app.on("ready", async () => {
@@ -122,9 +137,19 @@ app.on("ready", async () => {
   const preloadPath = path.join(__dirname, "preload.js");
   createFloatingWindow(preloadPath);
 
+  // 状態変更時にRendererへブロードキャスト
+  appStateManager.subscribe(() => {
+    broadcastStateChange();
+  });
+
   // ウィンドウ読み込み完了後に認証トークンを送信し、Idle状態でウィンドウを表示
   getFloatingWindow()?.webContents.on("did-finish-load", () => {
-    getFloatingWindow()?.webContents.send("auth-token", authToken);
+    getFloatingWindow()?.webContents.send(
+      IPC_MAIN_TO_RENDERER.AUTH_TOKEN,
+      authToken,
+    );
+    // 初期状態を送信
+    broadcastStateChange();
     showFloatingWindow();
   });
 

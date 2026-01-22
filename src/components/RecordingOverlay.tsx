@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
+import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
+import type { AppState } from "../state/appState";
+import type { StateChangePayload } from "../types/electron";
 
 type TranscribeResponse = {
   text?: string;
   error?: string;
 };
 
-type OverlayState = "idle" | "recording" | "transcribing" | "error";
+// Alias for clarity - renderer uses same states as main process
+type OverlayState = AppState;
 
 const WINDOW_SIZE_IDLE = { width: 130, height: 32 };
 const WINDOW_SIZE_RECORDING = { width: 120, height: 32 };
@@ -66,27 +70,27 @@ export const RecordingOverlay = () => {
   const isCancelledRef = useRef(false);
   const authTokenRef = useRef<string | null>(null);
 
+  // Subscribe to state changes from Main Process (Single Source of Truth)
   useEffect(() => {
+    window.electronAPI.onStateChanged((payload: StateChangePayload) => {
+      setOverlayState(payload.state);
+      setError(payload.error);
+    });
+
     window.electronAPI.onAuthToken((token) => {
       authTokenRef.current = token;
     });
-    window.electronAPI.onResetToIdle(() => {
-      setOverlayState("idle");
-      setError(null);
-    });
+
     return () => {
-      window.electronAPI.removeAllListeners("auth-token");
-      window.electronAPI.removeAllListeners("reset-to-idle");
+      window.electronAPI.removeAllListeners(IPC_MAIN_TO_RENDERER.STATE_CHANGED);
+      window.electronAPI.removeAllListeners(IPC_MAIN_TO_RENDERER.AUTH_TOKEN);
     };
   }, []);
 
   const transcribe = useCallback(async (blob: Blob) => {
-    setOverlayState("transcribing");
-    setError(null);
+    // State is managed by Main Process, we just send events
 
     if (!authTokenRef.current) {
-      setError("Authentication not ready");
-      setOverlayState("error");
       window.electronAPI.sendRecordingError("Authentication not ready");
       return;
     }
@@ -112,15 +116,11 @@ export const RecordingOverlay = () => {
       if (data.text) {
         window.electronAPI.sendTranscriptionComplete(data.text);
       } else {
-        setError("No speech detected");
-        setOverlayState("error");
         window.electronAPI.sendRecordingError("No speech detected");
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Transcription failed";
-      setError(errorMessage);
-      setOverlayState("error");
       window.electronAPI.sendRecordingError(errorMessage);
     }
   }, []);
@@ -134,8 +134,7 @@ export const RecordingOverlay = () => {
   useEffect(() => {
     const handleStartRecording = () => {
       isCancelledRef.current = false;
-      setOverlayState("recording");
-      setError(null);
+      // State is managed by Main Process via onStateChanged
       startRecording();
     };
 
@@ -149,15 +148,18 @@ export const RecordingOverlay = () => {
     window.electronAPI.onStopRecording(handleStopRecording);
 
     return () => {
-      window.electronAPI.removeAllListeners("start-recording");
-      window.electronAPI.removeAllListeners("stop-recording");
+      window.electronAPI.removeAllListeners(
+        IPC_MAIN_TO_RENDERER.START_RECORDING,
+      );
+      window.electronAPI.removeAllListeners(
+        IPC_MAIN_TO_RENDERER.STOP_RECORDING,
+      );
     };
   }, [startRecording, stopRecording, recorderState]);
 
   useEffect(() => {
     if (recordError) {
-      setError(recordError);
-      setOverlayState("error");
+      // State is managed by Main Process via onStateChanged
       window.electronAPI.sendRecordingError(recordError);
     }
   }, [recordError]);
@@ -182,9 +184,8 @@ export const RecordingOverlay = () => {
   }, [recorderState, stopRecording]);
 
   const handleDismissError = useCallback(() => {
+    // State is managed by Main Process via onStateChanged
     window.electronAPI.sendErrorDismissed();
-    setOverlayState("idle");
-    setError(null);
   }, []);
 
   // Idle State

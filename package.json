@@ -1,8 +1,8 @@
 {
-  "name": "politely",
-  "productName": "politely",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "name": "Politely",
+  "productName": "Politely",
+  "version": "0.0.0",
+  "description": "あなたの発言に社会性フィルターを。",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {

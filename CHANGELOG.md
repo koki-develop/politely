@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/koki-develop/politely/compare/v0.0.1...v0.0.2) (2026-01-23)
+
+
+### Features
+
+* Release v0.0.2 ([783b486](https://github.com/koki-develop/politely/commit/783b486033415597c458ef1a7fbbfcbbd3a33553))
+
 ## 0.0.1 (2026-01-23)
 
 

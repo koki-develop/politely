@@ -31,9 +31,23 @@ export function checkAccessibilityPermission(prompt = false): PermissionStatus {
 export function checkMicrophonePermission(): PermissionStatus {
   if (process.platform !== "darwin") return "granted";
   const status = systemPreferences.getMediaAccessStatus("microphone");
-  // Map "restricted" to "denied" for simpler handling
-  if (status === "restricted") return "denied";
-  return status as PermissionStatus;
+
+  // Electron API の戻り値を型安全にマッピング
+  const statusMap: Record<string, PermissionStatus> = {
+    granted: "granted",
+    denied: "denied",
+    "not-determined": "not-determined",
+    restricted: "denied", // restricted は denied として扱う
+    unknown: "unknown",
+  };
+
+  const mappedStatus = statusMap[status];
+  if (mappedStatus === undefined) {
+    console.warn(`[Permissions] Unknown microphone status: ${status}`);
+    return "denied"; // 不明な状態は denied として扱う
+  }
+
+  return mappedStatus;
 }
 
 /**

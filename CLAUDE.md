@@ -167,6 +167,7 @@ src/
 - **invoke/handle パターンを優先**: 応答が必要な IPC 通信は `ipcRenderer.invoke()` + `ipcMain.handle()` を使用
 - **send/on パターンは Push 通知のみ**: Main から Renderer への一方向通知（状態変更など）のみ `send/on` を使用
 - **型安全性**: `IPC_INVOKE`, `IPC_RENDERER_TO_MAIN`, `IPC_MAIN_TO_RENDERER` の定数を使用し、文字列リテラルを避ける
+- **チャンネル型のインポート**: `MainToRendererChannel` 等の型は `src/ipc/channels.ts` から直接インポートする（`types/electron.d.ts` からは再エクスポートされていない）
 
 ### セキュリティ方針
 
@@ -186,6 +187,7 @@ src/
   - マイク: `systemPreferences.getMediaAccessStatus("microphone")` / `askForMediaAccess("microphone")`
 - **システム設定を開く**: `shell.openExternal("x-apple.systempreferences:com.apple.preference.security?Privacy_*")`
 - **Info.plist**: `forge.config.ts` の `packagerConfig.extendInfo` に `NSMicrophoneUsageDescription` を設定
+- **型マッピング**: Electron API の戻り値型（`"restricted"` 等を含む）とアプリの `PermissionStatus` 型は異なる。型キャストではなく明示的なマッピングを使用する（`src/permissions/service.ts` 参照）
 
 ### コードスタイル（Biome）
 

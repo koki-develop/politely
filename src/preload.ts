@@ -2,6 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
+import type { MainToRendererChannel } from "./ipc/channels";
 import {
   IPC_INVOKE,
   IPC_MAIN_TO_RENDERER,
@@ -63,7 +64,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     return ipcRenderer.invoke(IPC_INVOKE.TRANSCRIBE, audioData);
   },
 
-  removeAllListeners: (channel: string) => {
+  removeAllListeners: (channel: MainToRendererChannel) => {
     ipcRenderer.removeAllListeners(channel);
   },
 });

@@ -8,6 +8,7 @@ type UseAudioRecorderReturn = {
   startRecording: () => void;
   stopRecording: () => void;
   audioBlob: Blob | null;
+  warmUpStream: () => Promise<void>;
 };
 
 export const useAudioRecorder = (): UseAudioRecorderReturn => {
@@ -141,5 +142,6 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
     startRecording,
     stopRecording,
     audioBlob,
+    warmUpStream,
   };
 };

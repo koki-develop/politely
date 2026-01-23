@@ -12,6 +12,7 @@ const config: ForgeConfig = {
     asar: true,
     icon: "assets/icon",
     extraResource: ["assets"],
+    appBundleId: "me.koki.politely",
     extendInfo: {
       NSMicrophoneUsageDescription:
         "Politely は音声入力のためにマイクを使用します。",

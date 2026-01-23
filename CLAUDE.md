@@ -71,11 +71,14 @@ src/
 ├── main.ts              # Electron メインプロセス（トレイアプリ）
 ├── overlay.tsx          # オーバーレイウィンドウ React エントリーポイント
 ├── settings.tsx         # 設定画面 React エントリーポイント
+├── onboarding.tsx       # オンボーディングウィンドウ React エントリーポイント
 ├── preload.ts           # IPC ブリッジ（contextBridge）
 ├── preload.settings.ts  # 設定画面用 IPC ブリッジ
+├── preload.onboarding.ts # オンボーディング画面用 IPC ブリッジ
 ├── index.css            # Tailwind CSS
 ├── floatingWindow.ts    # フローティングウィンドウ管理
 ├── settingsWindow.ts    # 設定ウィンドウ管理
+├── onboardingWindow.ts  # オンボーディングウィンドウ管理
 ├── globalShortcut.ts    # グローバルショートカット管理
 ├── pasteService.ts      # クリップボード + ペースト処理
 ├── transcription/       # 文字起こし処理
@@ -131,7 +134,8 @@ src/
 │       ├── ShortcutStep.tsx
 │       ├── PolitenessLevelStep.tsx
 │       ├── CompleteStep.tsx
-│       └── StepIndicator.tsx
+│       ├── StepIndicator.tsx
+│       └── ErrorBoundary.tsx
 └── types/               # 型定義
     └── electron.d.ts
 ```
@@ -142,6 +146,7 @@ src/
 - `vite.preload.config.ts` - Preload スクリプト用
 - `vite.overlay.config.ts` - Overlay Renderer 用（React Compiler + Tailwind CSS）
 - `vite.settings.config.ts` - Settings Renderer 用
+- `vite.onboarding.config.ts` - Onboarding Renderer 用
 
 **注意**: `vite.main.config.ts` と `vite.preload.config.ts` は空の設定（`defineConfig({})`）でOK。Electron Forge の Vite プラグインが Node.js 向けの設定を自動で処理する。
 

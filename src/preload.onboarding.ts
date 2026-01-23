@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { IPC_INVOKE, IPC_RENDERER_TO_MAIN } from "./ipc/channels";
+import type { PermissionsState } from "./permissions/service";
 import type { AppSettings, OnboardingState } from "./settings/schema";
 import type { UpdateSettingsResult } from "./types/electron";
 
@@ -33,5 +34,16 @@ contextBridge.exposeInMainWorld("onboardingAPI", {
   },
   endShortcutCapture: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_END);
+  },
+
+  // Permissions
+  checkPermissions: (): Promise<PermissionsState> => {
+    return ipcRenderer.invoke(IPC_INVOKE.CHECK_PERMISSIONS);
+  },
+  requestMicrophonePermission: (): Promise<boolean> => {
+    return ipcRenderer.invoke(IPC_INVOKE.REQUEST_MICROPHONE_PERMISSION);
+  },
+  openMicrophoneSettings: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS);
   },
 });

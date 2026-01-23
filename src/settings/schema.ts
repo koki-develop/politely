@@ -47,6 +47,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export const ONBOARDING_STEPS = [
   "welcome",
   "api-key",
+  "microphone",
   "shortcut-key",
   "completed",
 ] as const;

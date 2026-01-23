@@ -1,5 +1,6 @@
 import { IconChevronLeft } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
+import type { PermissionStatus } from "../permissions/service";
 import {
   type AppSettings,
   DEFAULT_SHORTCUT,
@@ -9,6 +10,7 @@ import {
 import { cn } from "../utils/cn";
 import { ApiKeyStep } from "./onboarding/ApiKeyStep";
 import { CompleteStep } from "./onboarding/CompleteStep";
+import { MicrophoneStep } from "./onboarding/MicrophoneStep";
 import { ShortcutStep } from "./onboarding/ShortcutStep";
 import { StepIndicator } from "./onboarding/StepIndicator";
 import { WelcomeStep } from "./onboarding/WelcomeStep";
@@ -20,6 +22,8 @@ export const OnboardingApp = () => {
   const [initError, setInitError] = useState<string | null>(null);
   const [shortcutError, setShortcutError] = useState<string | null>(null);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [microphoneStatus, setMicrophoneStatus] =
+    useState<PermissionStatus | null>(null);
 
   const currentStepIndex = ONBOARDING_STEPS.indexOf(currentStep);
 
@@ -150,8 +154,13 @@ export const OnboardingApp = () => {
   const showBackButton = currentStep !== "welcome";
   // 最後のステップではボタンテキストを変更
   const isLastStep = currentStep === "completed";
-  // APIキー未入力時は次へボタンを無効にする
-  const isNextDisabled = currentStep === "api-key" && !settings.apiKey;
+  // APIキー未入力時、またはマイク未許可時は次へボタンを無効にする
+  const isNextDisabled =
+    (currentStep === "api-key" && !settings.apiKey) ||
+    (currentStep === "microphone" && microphoneStatus !== "granted");
+  // welcome と completed 以外は上寄せ
+  const isTopAlignedStep =
+    currentStep !== "welcome" && currentStep !== "completed";
 
   return (
     <div className="h-screen bg-zinc-900 text-white flex flex-col select-none overflow-hidden">
@@ -159,7 +168,12 @@ export const OnboardingApp = () => {
       <div className="h-7 flex-shrink-0 [-webkit-app-region:drag]" />
 
       {/* Content */}
-      <div className="flex-1 px-8 flex flex-col justify-center">
+      <div
+        className={cn(
+          "flex-1 px-8 flex flex-col",
+          isTopAlignedStep ? "justify-start pt-8" : "justify-center",
+        )}
+      >
         <div className="max-w-sm mx-auto w-full">
           {currentStep === "welcome" && <WelcomeStep />}
           {currentStep === "api-key" && (
@@ -167,6 +181,12 @@ export const OnboardingApp = () => {
               value={settings.apiKey ?? ""}
               onChange={handleApiKeyChange}
               error={apiKeyError}
+            />
+          )}
+          {currentStep === "microphone" && (
+            <MicrophoneStep
+              status={microphoneStatus}
+              onStatusChange={setMicrophoneStatus}
             />
           )}
           {currentStep === "shortcut-key" && (

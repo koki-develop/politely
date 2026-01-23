@@ -125,6 +125,7 @@ src/
 │   └── onboarding/          # オンボーディング用コンポーネント
 │       ├── WelcomeStep.tsx
 │       ├── ApiKeyStep.tsx
+│       ├── MicrophoneStep.tsx
 │       ├── ShortcutStep.tsx
 │       ├── CompleteStep.tsx
 │       └── StepIndicator.tsx
@@ -241,9 +242,17 @@ src/
 ### ステップ/状態管理のパターン
 
 - **文字列リテラルを使用**: ステップや状態は数値インデックスではなく文字列リテラルで管理する
-- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "shortcut-key", "completed"] as const`
+- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "microphone", "shortcut-key", "completed"] as const`
 - **完了判定**: 専用の `status` フィールドではなく、`currentStep === "completed"` で判定する
 - **型安全性**: `z.enum()` と `as const` を組み合わせて型安全なステップ管理を実現
+
+### オンボーディングの新しいステップ追加方法
+
+1. `src/settings/schema.ts` の `ONBOARDING_STEPS` 配列にステップ名を追加
+2. `src/components/onboarding/{StepName}Step.tsx` を作成（既存ステップをパターンとして参照）
+3. 必要に応じて `src/preload.onboarding.ts` に IPC API を追加
+4. `src/types/electron.d.ts` の `OnboardingElectronAPI` に型を追加
+5. `src/components/OnboardingApp.tsx` でステップコンポーネントをインポート・レンダリング
 
 ### ウィンドウ終了時のコールバック制御
 

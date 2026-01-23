@@ -83,6 +83,10 @@ export interface OnboardingElectronAPI {
   // Shortcut capture
   startShortcutCapture: () => void;
   endShortcutCapture: () => void;
+  // Permissions
+  checkPermissions: () => Promise<PermissionsState>;
+  requestMicrophonePermission: () => Promise<boolean>;
+  openMicrophoneSettings: () => void;
 }
 
 declare global {

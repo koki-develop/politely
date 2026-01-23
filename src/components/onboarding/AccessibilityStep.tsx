@@ -1,4 +1,4 @@
-import { IconCheck, IconHandClick } from "@tabler/icons-react";
+import { IconAccessible, IconCheck } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef } from "react";
 import type { PermissionStatus } from "../../permissions/service";
 import { StepIcon, StepLayout } from "./StepLayout";
@@ -80,7 +80,7 @@ export const AccessibilityStep = ({
       variant="form"
       icon={
         <StepIcon>
-          <IconHandClick size={28} className="text-violet-400" stroke={1.5} />
+          <IconAccessible size={28} className="text-violet-400" stroke={1.5} />
         </StepIcon>
       }
       title="アクセシビリティへのアクセスを許可"

@@ -85,7 +85,7 @@ export const MicrophoneStep = ({
         </StepIcon>
       }
       title="マイクへのアクセスを許可"
-      description="音声入力を使用するには、マイクへのアクセス許可が必要です。"
+      description="音声入力を使用するために必要です。"
       helperText="システム設定から後で変更することもできます"
     >
       <div className="flex items-center justify-center">

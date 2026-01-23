@@ -84,7 +84,7 @@ export const AccessibilityStep = ({
         </StepIcon>
       }
       title="アクセシビリティへのアクセスを許可"
-      description="テキストを自動入力するには、アクセシビリティへのアクセス許可が必要です。"
+      description="テキストを自動入力するために必要です。"
       helperText="システム設定から後で変更することもできます"
     >
       <div className="flex items-center justify-center">

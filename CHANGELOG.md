@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/koki-develop/politely/compare/v0.0.2...v0.0.3) (2026-01-23)
+
+
+### Bug Fixes
+
+* update zod dependency to 4.3.6 ([0d80c69](https://github.com/koki-develop/politely/commit/0d80c6972b0e1574ccb86aa3ac7caa706fa0e4d0))
+
 ## [0.0.2](https://github.com/koki-develop/politely/compare/v0.0.1...v0.0.2) (2026-01-23)
 
 

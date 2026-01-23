@@ -16,6 +16,7 @@ Politely は Electron + React + TypeScript で構築された macOS 向けトレ
 - **Package Manager**: Bun
 - **Linter/Formatter**: Biome
 - **Speech-to-Text**: OpenAI Whisper API
+- **Icons**: @tabler/icons-react
 
 ## Commands
 
@@ -106,7 +107,7 @@ src/
 ├── components/          # React コンポーネント
 │   ├── RecordingOverlay.tsx # オーバーレイ親コンポーネント
 │   ├── overlay/             # 状態別オーバーレイコンポーネント
-│   │   ├── icons.tsx        # SVG アイコン定義
+│   │   ├── icons.tsx        # アイコン定義（Tabler Icons ラッパー + カスタムアニメーション）
 │   │   ├── IdleOverlay.tsx
 │   │   ├── RecordingStateOverlay.tsx
 │   │   ├── TranscribingOverlay.tsx
@@ -196,6 +197,11 @@ src/
 - クォート: ダブルクォート
 - インポート自動整理: 有効
 - `useExhaustiveDependencies`: useEffect 内で関数を呼び出す場合、useCallback でメモ化して依存配列に追加すること
+
+### アイコン使用方針
+
+- **@tabler/icons-react を使用**: 新しいアイコンは Tabler Icons から選択
+- **カスタムアニメーション**: `PulseRing`（録音中）、`WaveDots`（処理中）は CSS アニメーション付きのカスタムコンポーネントとして維持
 
 ### UIデザイン方針
 

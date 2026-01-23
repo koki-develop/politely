@@ -64,6 +64,7 @@ export interface SettingsElectronAPI {
   // Permissions
   checkPermissions: () => Promise<PermissionsState>;
   requestMicrophonePermission: () => Promise<boolean>;
+  requestAccessibilityPermission: () => Promise<boolean>;
   openAccessibilitySettings: () => void;
   openMicrophoneSettings: () => void;
 }

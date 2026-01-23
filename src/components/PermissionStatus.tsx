@@ -4,6 +4,7 @@ type PermissionStatusProps = {
   label: string;
   description: string;
   status: PermissionStatusType;
+  onRequestPermission: () => Promise<boolean>;
   onOpenSettings: () => void;
 };
 
@@ -11,9 +12,22 @@ export const PermissionStatus = ({
   label,
   description,
   status,
+  onRequestPermission,
   onOpenSettings,
 }: PermissionStatusProps) => {
   const isGranted = status === "granted";
+
+  const handleClick = async () => {
+    try {
+      const granted = await onRequestPermission();
+      if (!granted) {
+        onOpenSettings();
+      }
+    } catch (error) {
+      console.error("[PermissionStatus] Failed to request permission:", error);
+      onOpenSettings();
+    }
+  };
 
   return (
     <div className="group flex items-center justify-between">
@@ -42,12 +56,12 @@ export const PermissionStatus = ({
       {!isGranted && (
         <button
           type="button"
-          onClick={onOpenSettings}
+          onClick={handleClick}
           className="px-3 py-1.5 text-[12px] font-medium text-violet-400 bg-violet-500/10
                      rounded-lg border border-violet-500/20 hover:bg-violet-500/20
                      transition-colors cursor-pointer"
         >
-          設定を開く
+          許可する
         </button>
       )}
     </div>

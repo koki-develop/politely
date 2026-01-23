@@ -287,6 +287,9 @@ export const SettingsApp = () => {
                 label="マイク"
                 description="音声の録音に使用します"
                 status={permissions?.microphone ?? "unknown"}
+                onRequestPermission={() =>
+                  window.settingsAPI.requestMicrophonePermission()
+                }
                 onOpenSettings={() =>
                   window.settingsAPI.openMicrophoneSettings()
                 }
@@ -296,6 +299,9 @@ export const SettingsApp = () => {
                 label="アクセシビリティ"
                 description="テキストの自動入力に使用します"
                 status={permissions?.accessibility ?? "unknown"}
+                onRequestPermission={() =>
+                  window.settingsAPI.requestAccessibilityPermission()
+                }
                 onOpenSettings={() =>
                   window.settingsAPI.openAccessibilitySettings()
                 }

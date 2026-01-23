@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld("settingsAPI", {
   requestMicrophonePermission: (): Promise<boolean> => {
     return ipcRenderer.invoke(IPC_INVOKE.REQUEST_MICROPHONE_PERMISSION);
   },
+  requestAccessibilityPermission: (): Promise<boolean> => {
+    return ipcRenderer.invoke(IPC_INVOKE.REQUEST_ACCESSIBILITY_PERMISSION);
+  },
   openAccessibilitySettings: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_ACCESSIBILITY_SETTINGS);
   },

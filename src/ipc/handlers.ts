@@ -4,6 +4,12 @@ import {
   registerGlobalShortcut,
   unregisterAllShortcuts,
 } from "../globalShortcut";
+import {
+  completeOnboarding,
+  getOnboardingState,
+  isOnboardingCompleted,
+  updateOnboardingState,
+} from "../onboarding/store";
 import { PasteError, pasteText } from "../pasteService";
 import {
   checkAllPermissions,
@@ -11,7 +17,7 @@ import {
   openMicrophoneSettings,
   requestMicrophonePermission,
 } from "../permissions/service";
-import type { AppSettings } from "../settings/schema";
+import type { AppSettings, OnboardingState } from "../settings/schema";
 import { getSettings, updateSettings } from "../settings/store";
 import type { AppStateManager } from "../state/appState";
 import { abortTranscription, transcribe } from "../transcription/service";
@@ -137,10 +143,11 @@ export function setupSettingsHandlers(
     ): UpdateSettingsResult => {
       const oldSettings = getSettings();
 
-      // ショートカット変更時は先に登録を試みる
+      // ショートカット変更時は先に登録を試みる（オンボーディング中は登録しない）
       if (
         newSettings.globalShortcut !== undefined &&
-        newSettings.globalShortcut !== oldSettings.globalShortcut
+        newSettings.globalShortcut !== oldSettings.globalShortcut &&
+        isOnboardingCompleted()
       ) {
         const shortcutResult = registerGlobalShortcut(
           newSettings.globalShortcut,
@@ -207,6 +214,10 @@ export function setupSettingsHandlers(
 
   // ショートカットキャプチャ終了
   ipcMain.on(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_END, () => {
+    // オンボーディング中はショートカットを登録しない
+    if (!isOnboardingCompleted()) {
+      return;
+    }
     const settings = getSettings();
     registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
   });
@@ -234,5 +245,43 @@ export function setupPermissionsHandlers(ipcMain: IpcMain): void {
   // アクセシビリティ設定を開く
   ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_ACCESSIBILITY_SETTINGS, () => {
     openAccessibilitySettings();
+  });
+}
+
+/**
+ * オンボーディング関連の IPC ハンドラをセットアップ
+ */
+export function setupOnboardingHandlers(ipcMain: IpcMain): void {
+  // オンボーディング状態取得
+  ipcMain.handle(IPC_INVOKE.GET_ONBOARDING_STATE, () => {
+    try {
+      return getOnboardingState();
+    } catch (error) {
+      console.error("[Main] Failed to get onboarding state:", error);
+      throw error;
+    }
+  });
+
+  // オンボーディング状態更新
+  ipcMain.handle(
+    IPC_INVOKE.UPDATE_ONBOARDING_STATE,
+    (_event: IpcMainInvokeEvent, state: Partial<OnboardingState>) => {
+      try {
+        return updateOnboardingState(state);
+      } catch (error) {
+        console.error("[Main] Failed to update onboarding state:", error);
+        throw error;
+      }
+    },
+  );
+
+  // オンボーディング完了
+  ipcMain.handle(IPC_INVOKE.COMPLETE_ONBOARDING, () => {
+    try {
+      completeOnboarding();
+    } catch (error) {
+      console.error("[Main] Failed to complete onboarding:", error);
+      throw error;
+    }
   });
 }

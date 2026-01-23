@@ -16,6 +16,10 @@ export const IPC_INVOKE = {
   REQUEST_MICROPHONE_PERMISSION: "request-microphone-permission",
   GET_SETTINGS: "get-settings",
   UPDATE_SETTINGS: "update-settings",
+  // Onboarding
+  GET_ONBOARDING_STATE: "get-onboarding-state",
+  UPDATE_ONBOARDING_STATE: "update-onboarding-state",
+  COMPLETE_ONBOARDING: "complete-onboarding",
 } as const;
 
 // Renderer -> Main channels

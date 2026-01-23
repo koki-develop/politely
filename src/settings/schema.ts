@@ -42,3 +42,22 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showWindowOnIdle: true,
   globalShortcut: DEFAULT_SHORTCUT,
 };
+
+// オンボーディングステップ
+export const ONBOARDING_STEPS = [
+  "welcome",
+  "api-key",
+  "shortcut-key",
+  "completed",
+] as const;
+export const OnboardingStepSchema = z.enum(ONBOARDING_STEPS);
+export type OnboardingStep = z.infer<typeof OnboardingStepSchema>;
+
+export const OnboardingStateSchema = z.object({
+  currentStep: OnboardingStepSchema,
+});
+export type OnboardingState = z.infer<typeof OnboardingStateSchema>;
+
+export const DEFAULT_ONBOARDING_STATE: OnboardingState = {
+  currentStep: "welcome",
+};

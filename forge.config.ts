@@ -45,6 +45,11 @@ const config: ForgeConfig = {
           config: "vite.preload.config.ts",
           target: "preload",
         },
+        {
+          entry: "src/preload.onboarding.ts",
+          config: "vite.preload.config.ts",
+          target: "preload",
+        },
       ],
       renderer: [
         {
@@ -54,6 +59,10 @@ const config: ForgeConfig = {
         {
           name: "settings_window",
           config: "vite.settings.config.ts",
+        },
+        {
+          name: "onboarding_window",
+          config: "vite.onboarding.config.ts",
         },
       ],
     }),

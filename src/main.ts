@@ -16,10 +16,16 @@ import {
 } from "./globalShortcut";
 import { IPC_MAIN_TO_RENDERER } from "./ipc/channels";
 import {
+  setupOnboardingHandlers,
   setupPermissionsHandlers,
   setupRecordingHandlers,
   setupSettingsHandlers,
 } from "./ipc/handlers";
+import { isOnboardingCompleted } from "./onboarding/store";
+import {
+  createOnboardingWindow,
+  destroyOnboardingWindow,
+} from "./onboardingWindow";
 import { startActiveAppTracking, stopActiveAppTracking } from "./pasteService";
 import { getSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
@@ -113,22 +119,14 @@ function setupIpcHandlers() {
   );
 
   setupPermissionsHandlers(ipcMain);
+
+  setupOnboardingHandlers(ipcMain);
 }
 
-app.on("ready", async () => {
-  // macOS: Dock アイコンを隠す
-  if (process.platform === "darwin") {
-    app.dock?.hide();
-  }
-
-  // 保存済みAPIキーでOpenAIクライアントを初期化
-  const settings = getSettings();
-  if (settings.apiKey) {
-    initializeOpenAI(settings.apiKey);
-  }
-
-  createTray();
-
+/**
+ * フローティングウィンドウを初期化して表示する
+ */
+function initializeFloatingWindow() {
   const preloadPath = path.join(__dirname, "preload.js");
   createFloatingWindow(preloadPath);
 
@@ -161,12 +159,45 @@ app.on("ready", async () => {
     }
   });
 
-  setupIpcHandlers();
-
+  // グローバルショートカットを登録
+  const settings = getSettings();
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
 
   // アクティブアプリのトラッキングを開始
   startActiveAppTracking();
+}
+
+app.on("ready", async () => {
+  // macOS: Dock アイコンを隠す
+  if (process.platform === "darwin") {
+    app.dock?.hide();
+  }
+
+  // 保存済みAPIキーでOpenAIクライアントを初期化
+  const settings = getSettings();
+  if (settings.apiKey) {
+    initializeOpenAI(settings.apiKey);
+  }
+
+  createTray();
+  setupIpcHandlers();
+
+  // オンボーディングが完了していない場合はオンボーディングウィンドウを表示
+  if (!isOnboardingCompleted()) {
+    const onboardingPreloadPath = path.join(__dirname, "preload.onboarding.js");
+    createOnboardingWindow(onboardingPreloadPath, () => {
+      // オンボーディング完了後にフローティングウィンドウを初期化
+      // 設定が変更されている可能性があるので再取得
+      const updatedSettings = getSettings();
+      if (updatedSettings.apiKey) {
+        initializeOpenAI(updatedSettings.apiKey);
+      }
+      initializeFloatingWindow();
+    });
+  } else {
+    // オンボーディング完了済みの場合は通常起動
+    initializeFloatingWindow();
+  }
 });
 
 // トレイアプリなのでウィンドウが閉じても終了しない
@@ -183,5 +214,6 @@ app.on("before-quit", (event) => {
   event.preventDefault();
   destroyFloatingWindow();
   destroySettingsWindow();
+  destroyOnboardingWindow();
   app.exit(0);
 });

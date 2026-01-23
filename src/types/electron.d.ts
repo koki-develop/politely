@@ -1,7 +1,7 @@
 import type { AppState } from "../state/appState";
 import type { MainToRendererChannel } from "../ipc/channels";
 import type { PermissionsState } from "../permissions/service";
-import type { AppSettings } from "../settings/schema";
+import type { AppSettings, OnboardingState } from "../settings/schema";
 import type { ErrorCode } from "../errors/codes";
 
 export type AppError = {
@@ -68,9 +68,27 @@ export interface SettingsElectronAPI {
   openMicrophoneSettings: () => void;
 }
 
+export interface OnboardingElectronAPI {
+  // Onboarding state (invoke pattern)
+  getOnboardingState: () => Promise<OnboardingState>;
+  updateOnboardingState: (
+    state: Partial<OnboardingState>,
+  ) => Promise<{ success: true } | { success: false; error: string }>;
+  completeOnboarding: () => Promise<void>;
+  // Settings (invoke pattern)
+  getSettings: () => Promise<AppSettings>;
+  updateSettings: (
+    settings: Partial<AppSettings>,
+  ) => Promise<UpdateSettingsResult>;
+  // Shortcut capture
+  startShortcutCapture: () => void;
+  endShortcutCapture: () => void;
+}
+
 declare global {
   interface Window {
     electronAPI: ElectronAPI;
     settingsAPI: SettingsElectronAPI;
+    onboardingAPI: OnboardingElectronAPI;
   }
 }

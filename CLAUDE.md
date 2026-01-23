@@ -100,6 +100,8 @@ src/
 ├── settings/            # 設定管理
 │   ├── schema.ts        # Zod スキーマ・型定義
 │   └── store.ts         # electron-store ラッパー
+├── onboarding/          # オンボーディング
+│   └── store.ts         # オンボーディング状態ストア
 ├── hooks/               # カスタムフック
 │   ├── useAudioRecorder.ts  # 音声録音
 │   ├── useOverlayState.ts   # Main Process からの状態同期
@@ -118,7 +120,14 @@ src/
 │   ├── ApiKeyInput.tsx
 │   ├── ToggleSwitch.tsx
 │   ├── ShortcutInput.tsx
-│   └── PermissionStatus.tsx
+│   ├── PermissionStatus.tsx
+│   ├── OnboardingApp.tsx    # オンボーディングウィザード
+│   └── onboarding/          # オンボーディング用コンポーネント
+│       ├── WelcomeStep.tsx
+│       ├── ApiKeyStep.tsx
+│       ├── ShortcutStep.tsx
+│       ├── CompleteStep.tsx
+│       └── StepIndicator.tsx
 └── types/               # 型定義
     └── electron.d.ts
 ```
@@ -228,3 +237,32 @@ src/
 
 - **Structured Output を優先**: LLM からの出力を安定させるため、`openai.chat.completions.parse()` と Zod スキーマ（`zodResponseFormat`）を使用する
 - **注意**: `openai.beta.chat.completions.parse()` ではなく `openai.chat.completions.parse()` を使用すること
+
+### ステップ/状態管理のパターン
+
+- **文字列リテラルを使用**: ステップや状態は数値インデックスではなく文字列リテラルで管理する
+- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "shortcut-key", "completed"] as const`
+- **完了判定**: 専用の `status` フィールドではなく、`currentStep === "completed"` で判定する
+- **型安全性**: `z.enum()` と `as const` を組み合わせて型安全なステップ管理を実現
+
+### ウィンドウ終了時のコールバック制御
+
+- **問題**: `before-quit` イベントで `destroyWindow()` を呼ぶと、`closed` イベントが発火しコールバックが意図せず実行される
+- **解決策**: `isQuitting` フラグを使用して、アプリ終了時はコールバックをスキップする
+- **パターン例**:
+  ```typescript
+  let isQuitting = false;
+
+  window.on("closed", () => {
+    if (isQuitting) {
+      // アプリ終了時はコールバックを呼ばない
+      return;
+    }
+    onCloseCallback?.();
+  });
+
+  function destroyWindow() {
+    isQuitting = true;
+    window.close();
+  }
+  ```

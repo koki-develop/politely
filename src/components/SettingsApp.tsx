@@ -20,6 +20,9 @@ import { ToggleSwitch } from "./ToggleSwitch";
 
 export const SettingsApp = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [modelError, setModelError] = useState<string | null>(null);
+  const [appearanceError, setAppearanceError] = useState<string | null>(null);
   const [shortcutError, setShortcutError] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<PermissionsState | null>(null);
 
@@ -45,46 +48,61 @@ export const SettingsApp = () => {
   }, []);
 
   const handleWhisperModelChange = useCallback(async (model: WhisperModel) => {
+    setModelError(null);
     const result = await window.settingsAPI.updateSettings({
       whisperModel: model,
     });
     if (result.success) {
       setSettings(result.settings);
+    } else {
+      setModelError(result.error);
     }
   }, []);
 
   const handleGptModelChange = useCallback(async (model: GptModel) => {
+    setModelError(null);
     const result = await window.settingsAPI.updateSettings({ gptModel: model });
     if (result.success) {
       setSettings(result.settings);
+    } else {
+      setModelError(result.error);
     }
   }, []);
 
   const handlePolitenessLevelChange = useCallback(
     async (level: PolitenessLevel) => {
+      setModelError(null);
       const result = await window.settingsAPI.updateSettings({
         politenessLevel: level,
       });
       if (result.success) {
         setSettings(result.settings);
+      } else {
+        setModelError(result.error);
       }
     },
     [],
   );
 
   const handleApiKeyChange = useCallback(async (apiKey: string) => {
+    setApiKeyError(null);
     const result = await window.settingsAPI.updateSettings({ apiKey });
     if (result.success) {
       setSettings(result.settings);
+    } else {
+      setApiKeyError(result.error);
     }
   }, []);
 
   const handleShowWindowOnIdleChange = useCallback(async (checked: boolean) => {
+    setAppearanceError(null);
     const result = await window.settingsAPI.updateSettings({
       showWindowOnIdle: checked,
     });
     if (result.success) {
       setSettings(result.settings);
+    } else {
+      setAppearanceError(result.error);
     }
   }, []);
 
@@ -93,10 +111,11 @@ export const SettingsApp = () => {
     const result = await window.settingsAPI.updateSettings({
       globalShortcut: shortcut,
     });
-    if (!result.success) {
+    if (result.success) {
+      setSettings(result.settings);
+    } else {
       setShortcutError(result.error);
     }
-    setSettings(result.settings);
   }, []);
 
   if (!settings) {
@@ -142,6 +161,9 @@ export const SettingsApp = () => {
               onChange={handleApiKeyChange}
             />
           </div>
+          {apiKeyError && (
+            <p className="text-[11px] text-red-400 mt-2">{apiKeyError}</p>
+          )}
         </div>
 
         {/* Models Section */}
@@ -189,6 +211,9 @@ export const SettingsApp = () => {
               onChange={handlePolitenessLevelChange}
             />
           </div>
+          {modelError && (
+            <p className="text-[11px] text-red-400 mt-2">{modelError}</p>
+          )}
         </div>
 
         {/* Appearance Section */}
@@ -210,6 +235,9 @@ export const SettingsApp = () => {
               onChange={handleShowWindowOnIdleChange}
             />
           </div>
+          {appearanceError && (
+            <p className="text-[11px] text-red-400 mt-2">{appearanceError}</p>
+          )}
         </div>
 
         {/* Shortcut Section */}

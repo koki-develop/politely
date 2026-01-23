@@ -115,7 +115,8 @@ src/
 │   ├── ModelSelector.tsx
 │   ├── ApiKeyInput.tsx
 │   ├── ToggleSwitch.tsx
-│   └── ShortcutInput.tsx
+│   ├── ShortcutInput.tsx
+│   └── PermissionStatus.tsx
 └── types/               # 型定義
     └── electron.d.ts
 ```

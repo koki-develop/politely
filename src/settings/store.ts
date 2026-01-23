@@ -18,6 +18,10 @@ const schema = {
     type: "string" as const,
     default: DEFAULT_SETTINGS.gptModel,
   },
+  politenessLevel: {
+    type: "string" as const,
+    default: DEFAULT_SETTINGS.politenessLevel,
+  },
   showWindowOnIdle: {
     type: "boolean" as const,
     default: DEFAULT_SETTINGS.showWindowOnIdle,
@@ -49,6 +53,7 @@ export function getSettings(): AppSettings {
     apiKey: s.get("apiKey"),
     whisperModel: s.get("whisperModel"),
     gptModel: s.get("gptModel"),
+    politenessLevel: s.get("politenessLevel"),
     showWindowOnIdle: s.get("showWindowOnIdle"),
     globalShortcut: s.get("globalShortcut"),
   };
@@ -89,6 +94,9 @@ export function updateSettings(
   }
   if (validated.gptModel !== undefined) {
     s.set("gptModel", validated.gptModel);
+  }
+  if (validated.politenessLevel !== undefined) {
+    s.set("politenessLevel", validated.politenessLevel);
   }
   if (validated.showWindowOnIdle !== undefined) {
     s.set("showWindowOnIdle", validated.showWindowOnIdle);

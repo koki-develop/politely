@@ -6,6 +6,7 @@ type ModelSelectorProps<T extends string> = {
   description: string;
   value: T;
   options: readonly T[];
+  labels?: Record<T, string>;
   onChange: (value: T) => void;
 };
 
@@ -14,6 +15,7 @@ export const ModelSelector = <T extends string>({
   description,
   value,
   options,
+  labels,
   onChange,
 }: ModelSelectorProps<T>) => {
   const id = useId();
@@ -37,7 +39,7 @@ export const ModelSelector = <T extends string>({
         >
           {options.map((option) => (
             <option key={option} value={option} className="bg-zinc-800">
-              {option}
+              {labels ? labels[option] : option}
             </option>
           ))}
         </select>

@@ -5,6 +5,9 @@ import {
   DEFAULT_SHORTCUT,
   GPT_MODELS,
   type GptModel,
+  POLITENESS_LEVEL_LABELS,
+  POLITENESS_LEVELS,
+  type PolitenessLevel,
   WHISPER_MODELS,
   type WhisperModel,
 } from "../settings/schema";
@@ -56,6 +59,18 @@ export const SettingsApp = () => {
       setSettings(result.settings);
     }
   }, []);
+
+  const handlePolitenessLevelChange = useCallback(
+    async (level: PolitenessLevel) => {
+      const result = await window.settingsAPI.updateSettings({
+        politenessLevel: level,
+      });
+      if (result.success) {
+        setSettings(result.settings);
+      }
+    },
+    [],
+  );
 
   const handleApiKeyChange = useCallback(async (apiKey: string) => {
     const result = await window.settingsAPI.updateSettings({ apiKey });
@@ -160,6 +175,18 @@ export const SettingsApp = () => {
               value={settings.gptModel}
               options={GPT_MODELS}
               onChange={handleGptModelChange}
+            />
+          </div>
+
+          {/* Politeness Level */}
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <ModelSelector
+              label="丁寧さレベル"
+              description="テキストをどの程度丁寧に変換するか"
+              value={settings.politenessLevel}
+              options={POLITENESS_LEVELS}
+              labels={POLITENESS_LEVEL_LABELS}
+              onChange={handlePolitenessLevelChange}
             />
           </div>
         </div>

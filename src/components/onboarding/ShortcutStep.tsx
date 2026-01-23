@@ -6,6 +6,7 @@ import {
   formatAcceleratorForDisplay,
   keyEventToAccelerator,
 } from "../../utils/shortcut";
+import { StepCard, StepIcon, StepLayout } from "./StepLayout";
 
 type ShortcutStepProps = {
   value: string;
@@ -75,31 +76,24 @@ export const ShortcutStep = ({ value, onChange, error }: ShortcutStepProps) => {
   }, [onChange]);
 
   return (
-    <div className="animate-fade-in">
-      {/* Icon */}
-      <div className="flex justify-center mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20 flex items-center justify-center">
+    <StepLayout
+      variant="form"
+      icon={
+        <StepIcon>
           <IconCommand size={28} className="text-violet-400" stroke={1.5} />
-        </div>
-      </div>
-
-      {/* Title */}
-      <h2 className="text-[17px] font-semibold text-zinc-100 tracking-[-0.02em] text-center mb-2">
-        ショートカットを設定
-      </h2>
-      <p className="text-[12px] text-zinc-500 text-center mb-8 leading-relaxed">
-        グローバルショートカットで、どのアプリからでも
-        <br />
-        すぐに Politely を呼び出せます。
-      </p>
-
-      {/* Input Card */}
-      <div
-        className={cn(
-          "p-4 bg-zinc-800/30 rounded-xl border",
-          error ? "border-red-500/50 bg-red-500/5" : "border-zinc-800/50",
-        )}
-      >
+        </StepIcon>
+      }
+      title="ショートカットを設定"
+      description={
+        <>
+          グローバルショートカットで、どのアプリからでも
+          <br />
+          すぐに Politely を呼び出せます。
+        </>
+      }
+      helperText="設定は後から変更できます"
+    >
+      <StepCard error={error}>
         <div className="group">
           <label htmlFor={id} className="block mb-3">
             <span className="text-[13px] font-medium text-zinc-100 tracking-[-0.01em]">
@@ -141,14 +135,8 @@ export const ShortcutStep = ({ value, onChange, error }: ShortcutStepProps) => {
               リセット
             </button>
           </div>
-          {error && <p className="text-[11px] text-red-400 mt-2">{error}</p>}
         </div>
-      </div>
-
-      {/* Helper text */}
-      <p className="text-[11px] text-zinc-600 text-center mt-4">
-        設定は後から変更できます
-      </p>
-    </div>
+      </StepCard>
+    </StepLayout>
   );
 };

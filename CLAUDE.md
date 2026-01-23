@@ -123,6 +123,7 @@ src/
 │   ├── PermissionStatus.tsx
 │   ├── OnboardingApp.tsx    # オンボーディングウィザード
 │   └── onboarding/          # オンボーディング用コンポーネント
+│       ├── StepLayout.tsx   # 共通レイアウト（StepLayout, StepIcon, StepCard）
 │       ├── WelcomeStep.tsx
 │       ├── ApiKeyStep.tsx
 │       ├── MicrophoneStep.tsx
@@ -249,7 +250,10 @@ src/
 ### オンボーディングの新しいステップ追加方法
 
 1. `src/settings/schema.ts` の `ONBOARDING_STEPS` 配列にステップ名を追加
-2. `src/components/onboarding/{StepName}Step.tsx` を作成（既存ステップをパターンとして参照）
+2. `src/components/onboarding/{StepName}Step.tsx` を作成
+   - **共通コンポーネント**: `StepLayout.tsx` から `StepLayout`, `StepIcon`, `StepCard` をインポートして使用
+   - `variant="hero"`: WelcomeStep, CompleteStep のようなシンプルな表示用
+   - `variant="form"`: ApiKeyStep, ShortcutStep のようなフォーム入力用
 3. 必要に応じて `src/preload.onboarding.ts` に IPC API を追加
 4. `src/types/electron.d.ts` の `OnboardingElectronAPI` に型を追加
 5. `src/components/OnboardingApp.tsx` でステップコンポーネントをインポート・レンダリング

@@ -83,6 +83,12 @@ src/
 │   └── channels.ts
 ├── state/               # 状態管理
 │   └── appState.ts      # AppStateManager（状態マシン）
+├── errors/              # エラー定義
+│   └── codes.ts         # エラーコード、メッセージ、ヘルパー関数
+├── constants/           # 定数定義
+│   └── ui.ts            # ウィンドウサイズ、タイミング定数
+├── utils/               # ユーティリティ関数
+│   └── shortcut.ts      # ショートカット表示変換
 ├── permissions/         # 権限管理
 │   └── service.ts       # macOS 権限チェック・リクエスト・設定を開く
 ├── settings/            # 設定管理
@@ -175,6 +181,13 @@ src/
 - **コンパクト**: フローティングウィンドウは極力小さく、邪魔にならないサイズに
 - **エラーメッセージ**: 簡潔な文調で統一（例: 「〜へのアクセスを許可してください。」）
 - **エラーからのアクション導線**: エラー表示には解決への導線（設定を開くボタン等）を提供する
+
+### エラーハンドリング
+
+- **構造化エラー**: `AppError` 型（`{ code: ErrorCode, message: string }`）を使用
+- **エラーコード**: `src/errors/codes.ts` の `ERROR_CODES` で定義、文字列検索ではなくコードで判定
+- **エラーメッセージ**: `ERROR_MESSAGES` マップで一元管理
+- **権限エラー判定**: `isPermissionError(code)`, `getPermissionErrorType(code)` ヘルパー関数を使用
 
 ### OpenAI API 使用方針
 

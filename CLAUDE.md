@@ -79,8 +79,11 @@ src/
 ├── pasteService.ts      # クリップボード + ペースト処理
 ├── transcription/       # 文字起こし処理
 │   └── service.ts       # OpenAI API を使用した文字起こし + 丁寧語変換
-├── ipc/                 # IPC チャンネル定数（型安全な IPC 通信）
-│   └── channels.ts
+├── ipc/                 # IPC 通信
+│   ├── channels.ts      # チャンネル定数
+│   └── handlers.ts      # IPC ハンドラ（録音、設定、権限）
+├── shortcut/            # ショートカット処理
+│   └── handler.ts       # ショートカットハンドラ
 ├── state/               # 状態管理
 │   └── appState.ts      # AppStateManager（状態マシン）
 ├── errors/              # エラー定義
@@ -90,7 +93,8 @@ src/
 ├── utils/               # ユーティリティ関数
 │   └── shortcut.ts      # ショートカット表示変換
 ├── permissions/         # 権限管理
-│   └── service.ts       # macOS 権限チェック・リクエスト・設定を開く
+│   ├── service.ts       # macOS 権限チェック・リクエスト・設定を開く
+│   └── permissionChecker.ts # 録音開始時の権限チェックフロー
 ├── settings/            # 設定管理
 │   ├── schema.ts        # Zod スキーマ・型定義
 │   └── store.ts         # electron-store ラッパー
@@ -148,6 +152,12 @@ src/
 4. 音声を IPC 経由で Main Process に送信、Whisper API で文字起こし + GPT で丁寧語変換
 5. 文字起こし結果をクリップボードに書き込み
 6. AppleScript で元のアプリをアクティブにして `Cmd+V` をシミュレート
+
+### IPC 通信パターン
+
+- **invoke/handle パターンを優先**: 応答が必要な IPC 通信は `ipcRenderer.invoke()` + `ipcMain.handle()` を使用
+- **send/on パターンは Push 通知のみ**: Main から Renderer への一方向通知（状態変更など）のみ `send/on` を使用
+- **型安全性**: `IPC_INVOKE`, `IPC_RENDERER_TO_MAIN`, `IPC_MAIN_TO_RENDERER` の定数を使用し、文字列リテラルを避ける
 
 ### セキュリティ方針
 

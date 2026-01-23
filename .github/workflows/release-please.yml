@@ -25,10 +25,38 @@ jobs:
       pull-requests: write # for creating PRs
       issues: write # for creating labels
     outputs:
-      should-deploy: ${{ steps.release-please.outputs.release_created }}
+      should-upload: ${{ steps.release-please.outputs.release_created }}
+      tag: ${{ steps.release-please.outputs.tag_name }}
     steps:
       - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         id: release-please
         with:
           token: ${{ github.token }}
           release-type: node
+
+  upload:
+    needs: release-please
+    if: needs.release-please.outputs.should-upload == 'true'
+    name: Build and Upload Release Assets
+    runs-on: macos-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # for uploading release assets
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+
+      - run: bun run make -- --arch="${BUILD_ARCH}" --platform=darwin
+        env:
+          BUILD_ARCH: ${{ matrix.arch }}
+      - name: Upload Release Assets
+        run: gh release upload --clobber "$RELEASE_TAG" "out/make/zip/darwin/${BUILD_ARCH}/Politely-darwin-${BUILD_ARCH}-${RELEASE_TAG#v}.zip"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag }}
+          BUILD_ARCH: ${{ matrix.arch }}

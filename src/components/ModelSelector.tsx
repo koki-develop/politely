@@ -1,3 +1,4 @@
+import { IconChevronDown } from "@tabler/icons-react";
 import { useId } from "react";
 
 type ModelSelectorProps<T extends string> = {
@@ -42,19 +43,7 @@ export const ModelSelector = <T extends string>({
         </select>
         {/* Chevron icon */}
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 group-hover:text-zinc-400 transition-colors">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M3 4.5L6 7.5L9 4.5" />
-          </svg>
+          <IconChevronDown size={12} stroke={1.5} aria-hidden="true" />
         </div>
       </div>
     </div>

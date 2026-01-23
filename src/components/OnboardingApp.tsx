@@ -8,6 +8,7 @@ import {
   type OnboardingStep,
 } from "../settings/schema";
 import { cn } from "../utils/cn";
+import { AccessibilityStep } from "./onboarding/AccessibilityStep";
 import { ApiKeyStep } from "./onboarding/ApiKeyStep";
 import { CompleteStep } from "./onboarding/CompleteStep";
 import { MicrophoneStep } from "./onboarding/MicrophoneStep";
@@ -23,6 +24,8 @@ export const OnboardingApp = () => {
   const [shortcutError, setShortcutError] = useState<string | null>(null);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [microphoneStatus, setMicrophoneStatus] =
+    useState<PermissionStatus | null>(null);
+  const [accessibilityStatus, setAccessibilityStatus] =
     useState<PermissionStatus | null>(null);
 
   const currentStepIndex = ONBOARDING_STEPS.indexOf(currentStep);
@@ -154,10 +157,11 @@ export const OnboardingApp = () => {
   const showBackButton = currentStep !== "welcome";
   // 最後のステップではボタンテキストを変更
   const isLastStep = currentStep === "completed";
-  // APIキー未入力時、またはマイク未許可時は次へボタンを無効にする
+  // APIキー未入力時、またはマイク・アクセシビリティ未許可時は次へボタンを無効にする
   const isNextDisabled =
     (currentStep === "api-key" && !settings.apiKey) ||
-    (currentStep === "microphone" && microphoneStatus !== "granted");
+    (currentStep === "microphone" && microphoneStatus !== "granted") ||
+    (currentStep === "accessibility" && accessibilityStatus !== "granted");
   // welcome と completed 以外は上寄せ
   const isTopAlignedStep =
     currentStep !== "welcome" && currentStep !== "completed";
@@ -187,6 +191,12 @@ export const OnboardingApp = () => {
             <MicrophoneStep
               status={microphoneStatus}
               onStatusChange={setMicrophoneStatus}
+            />
+          )}
+          {currentStep === "accessibility" && (
+            <AccessibilityStep
+              status={accessibilityStatus}
+              onStatusChange={setAccessibilityStatus}
             />
           )}
           {currentStep === "shortcut-key" && (

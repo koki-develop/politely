@@ -87,6 +87,8 @@ export interface OnboardingElectronAPI {
   checkPermissions: () => Promise<PermissionsState>;
   requestMicrophonePermission: () => Promise<boolean>;
   openMicrophoneSettings: () => void;
+  openAccessibilitySettings: () => void;
+  requestAccessibilityPermission: () => Promise<boolean>;
 }
 
 declare global {

@@ -1,17 +1,17 @@
-import { IconCheck, IconMicrophone } from "@tabler/icons-react";
+import { IconCheck, IconHandClick } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef } from "react";
 import type { PermissionStatus } from "../../permissions/service";
 import { StepIcon, StepLayout } from "./StepLayout";
 
-type MicrophoneStepProps = {
+type AccessibilityStepProps = {
   status: PermissionStatus | null;
   onStatusChange: (status: PermissionStatus) => void;
 };
 
-export const MicrophoneStep = ({
+export const AccessibilityStep = ({
   status,
   onStatusChange,
-}: MicrophoneStepProps) => {
+}: AccessibilityStepProps) => {
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ポーリングを停止するヘルパー関数
@@ -27,9 +27,9 @@ export const MicrophoneStep = ({
     const checkPermission = async () => {
       try {
         const permissions = await window.onboardingAPI.checkPermissions();
-        onStatusChange(permissions.microphone);
+        onStatusChange(permissions.accessibility);
       } catch (error) {
-        console.error("[MicrophoneStep] Failed to check permission:", error);
+        console.error("[AccessibilityStep] Failed to check permission:", error);
         onStatusChange("unknown");
       }
     };
@@ -45,32 +45,31 @@ export const MicrophoneStep = ({
 
   const handleRequestPermission = useCallback(async () => {
     try {
-      // マイク権限リクエスト（システムダイアログ表示）
-      const granted = await window.onboardingAPI.requestMicrophonePermission();
+      // アクセシビリティ権限リクエスト（システムプロンプト表示）
+      const granted =
+        await window.onboardingAPI.requestAccessibilityPermission();
 
       if (granted) {
         onStatusChange("granted");
-      } else {
-        // 拒否された場合はシステム設定を開く
-        window.onboardingAPI.openMicrophoneSettings();
-
-        // 設定画面を開いた後、権限変更をポーリングで検知
-        stopPolling();
-
-        pollIntervalRef.current = setInterval(async () => {
-          try {
-            const permissions = await window.onboardingAPI.checkPermissions();
-            if (permissions.microphone === "granted") {
-              onStatusChange("granted");
-              stopPolling();
-            }
-          } catch (error) {
-            console.error("[MicrophoneStep] Polling error:", error);
-          }
-        }, 1000);
+        return;
       }
+
+      // まだ許可されていない場合、ポーリングで権限変更を検知
+      stopPolling();
+
+      pollIntervalRef.current = setInterval(async () => {
+        try {
+          const permissions = await window.onboardingAPI.checkPermissions();
+          if (permissions.accessibility === "granted") {
+            onStatusChange("granted");
+            stopPolling();
+          }
+        } catch (error) {
+          console.error("[AccessibilityStep] Polling error:", error);
+        }
+      }, 1000);
     } catch (error) {
-      console.error("[MicrophoneStep] Failed to request permission:", error);
+      console.error("[AccessibilityStep] Failed to request permission:", error);
     }
   }, [onStatusChange, stopPolling]);
 
@@ -81,11 +80,11 @@ export const MicrophoneStep = ({
       variant="form"
       icon={
         <StepIcon>
-          <IconMicrophone size={28} className="text-violet-400" stroke={1.5} />
+          <IconHandClick size={28} className="text-violet-400" stroke={1.5} />
         </StepIcon>
       }
-      title="マイクへのアクセスを許可"
-      description="音声入力を使用するには、マイクへのアクセス許可が必要です。"
+      title="アクセシビリティへのアクセスを許可"
+      description="テキストを自動入力するには、アクセシビリティへのアクセス許可が必要です。"
       helperText="システム設定から後で変更することもできます"
     >
       <div className="flex items-center justify-center">

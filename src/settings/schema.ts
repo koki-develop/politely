@@ -48,6 +48,7 @@ export const ONBOARDING_STEPS = [
   "welcome",
   "api-key",
   "microphone",
+  "accessibility",
   "shortcut-key",
   "completed",
 ] as const;

@@ -12,6 +12,7 @@ import {
 } from "../onboarding/store";
 import { PasteError, pasteText } from "../pasteService";
 import {
+  checkAccessibilityPermission,
   checkAllPermissions,
   openAccessibilitySettings,
   openMicrophoneSettings,
@@ -235,6 +236,12 @@ export function setupPermissionsHandlers(ipcMain: IpcMain): void {
   // マイク権限リクエスト
   ipcMain.handle(IPC_INVOKE.REQUEST_MICROPHONE_PERMISSION, async () => {
     return await requestMicrophonePermission();
+  });
+
+  // アクセシビリティ権限リクエスト（プロンプト表示）
+  ipcMain.handle(IPC_INVOKE.REQUEST_ACCESSIBILITY_PERMISSION, () => {
+    // prompt=true でシステムプロンプトを表示
+    return checkAccessibilityPermission(true) === "granted";
   });
 
   // マイク設定を開く

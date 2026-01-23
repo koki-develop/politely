@@ -14,6 +14,7 @@ export const IPC_INVOKE = {
   TRANSCRIBE: "transcribe",
   CHECK_PERMISSIONS: "check-permissions",
   REQUEST_MICROPHONE_PERMISSION: "request-microphone-permission",
+  REQUEST_ACCESSIBILITY_PERMISSION: "request-accessibility-permission",
   GET_SETTINGS: "get-settings",
   UPDATE_SETTINGS: "update-settings",
   // Onboarding

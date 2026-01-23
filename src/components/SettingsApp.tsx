@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
 import type { PermissionsState } from "../permissions/service";
 import {
   type AppSettings,
@@ -21,22 +20,11 @@ export const SettingsApp = () => {
   const [permissions, setPermissions] = useState<PermissionsState | null>(null);
 
   useEffect(() => {
-    window.settingsAPI.requestSettings();
-
-    window.settingsAPI.onSettingsData((data: AppSettings) => {
+    const loadSettings = async () => {
+      const data = await window.settingsAPI.getSettings();
       setSettings(data);
-    });
-
-    window.settingsAPI.onShortcutError((error: string) => {
-      setShortcutError(error);
-    });
-
-    return () => {
-      window.settingsAPI.removeAllListeners(IPC_MAIN_TO_RENDERER.SETTINGS_DATA);
-      window.settingsAPI.removeAllListeners(
-        IPC_MAIN_TO_RENDERER.SHORTCUT_ERROR,
-      );
     };
+    loadSettings();
   }, []);
 
   // 権限状態をチェック（2秒間隔でポーリング）
@@ -52,25 +40,47 @@ export const SettingsApp = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleWhisperModelChange = useCallback((model: WhisperModel) => {
-    window.settingsAPI.updateSettings({ whisperModel: model });
+  const handleWhisperModelChange = useCallback(async (model: WhisperModel) => {
+    const result = await window.settingsAPI.updateSettings({
+      whisperModel: model,
+    });
+    if (result.success) {
+      setSettings(result.settings);
+    }
   }, []);
 
-  const handleGptModelChange = useCallback((model: GptModel) => {
-    window.settingsAPI.updateSettings({ gptModel: model });
+  const handleGptModelChange = useCallback(async (model: GptModel) => {
+    const result = await window.settingsAPI.updateSettings({ gptModel: model });
+    if (result.success) {
+      setSettings(result.settings);
+    }
   }, []);
 
-  const handleApiKeyChange = useCallback((apiKey: string) => {
-    window.settingsAPI.updateSettings({ apiKey });
+  const handleApiKeyChange = useCallback(async (apiKey: string) => {
+    const result = await window.settingsAPI.updateSettings({ apiKey });
+    if (result.success) {
+      setSettings(result.settings);
+    }
   }, []);
 
-  const handleShowWindowOnIdleChange = useCallback((checked: boolean) => {
-    window.settingsAPI.updateSettings({ showWindowOnIdle: checked });
+  const handleShowWindowOnIdleChange = useCallback(async (checked: boolean) => {
+    const result = await window.settingsAPI.updateSettings({
+      showWindowOnIdle: checked,
+    });
+    if (result.success) {
+      setSettings(result.settings);
+    }
   }, []);
 
-  const handleShortcutChange = useCallback((shortcut: string) => {
+  const handleShortcutChange = useCallback(async (shortcut: string) => {
     setShortcutError(null);
-    window.settingsAPI.updateSettings({ globalShortcut: shortcut });
+    const result = await window.settingsAPI.updateSettings({
+      globalShortcut: shortcut,
+    });
+    if (!result.success) {
+      setShortcutError(result.error);
+    }
+    setSettings(result.settings);
   }, []);
 
   if (!settings) {

@@ -48,13 +48,16 @@ export interface ElectronAPI {
   removeAllListeners: (channel: MainToRendererChannel) => void;
 }
 
+export type UpdateSettingsResult =
+  | { success: true; settings: AppSettings }
+  | { success: false; error: string; settings: AppSettings };
+
 export interface SettingsElectronAPI {
-  // Settings
-  requestSettings: () => void;
-  updateSettings: (settings: Partial<AppSettings>) => void;
-  onSettingsData: (callback: (settings: AppSettings) => void) => void;
-  onShortcutError: (callback: (error: string) => void) => void;
-  removeAllListeners: (channel: string) => void;
+  // Settings (invoke pattern)
+  getSettings: () => Promise<AppSettings>;
+  updateSettings: (
+    settings: Partial<AppSettings>,
+  ) => Promise<UpdateSettingsResult>;
   // Shortcut capture
   startShortcutCapture: () => void;
   endShortcutCapture: () => void;

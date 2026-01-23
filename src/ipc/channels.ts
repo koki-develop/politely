@@ -7,9 +7,6 @@ export const IPC_MAIN_TO_RENDERER = {
   START_RECORDING: "start-recording",
   STOP_RECORDING: "stop-recording",
   STATE_CHANGED: "state-changed",
-  // Settings
-  SETTINGS_DATA: "settings-data",
-  SHORTCUT_ERROR: "shortcut-error",
 } as const;
 
 // Invoke channels (Renderer -> Main with response)
@@ -17,6 +14,8 @@ export const IPC_INVOKE = {
   TRANSCRIBE: "transcribe",
   CHECK_PERMISSIONS: "check-permissions",
   REQUEST_MICROPHONE_PERMISSION: "request-microphone-permission",
+  GET_SETTINGS: "get-settings",
+  UPDATE_SETTINGS: "update-settings",
 } as const;
 
 // Renderer -> Main channels
@@ -29,8 +28,6 @@ export const IPC_RENDERER_TO_MAIN = {
   SET_WINDOW_SIZE: "set-window-size",
   CENTER_WINDOW: "center-window",
   // Settings
-  GET_SETTINGS: "get-settings",
-  UPDATE_SETTINGS: "update-settings",
   OPEN_SETTINGS: "open-settings",
   // Shortcut capture
   SHORTCUT_CAPTURE_START: "shortcut-capture-start",

@@ -1,7 +1,6 @@
 import path from "node:path";
 import { app, ipcMain, Menu, Tray } from "electron";
 import started from "electron-squirrel-startup";
-import { ERROR_CODES, ERROR_MESSAGES } from "./errors/codes";
 import {
   centerFloatingWindow,
   createFloatingWindow,
@@ -15,36 +14,18 @@ import {
   registerGlobalShortcut,
   unregisterAllShortcuts,
 } from "./globalShortcut";
+import { IPC_MAIN_TO_RENDERER } from "./ipc/channels";
 import {
-  IPC_INVOKE,
-  IPC_MAIN_TO_RENDERER,
-  IPC_RENDERER_TO_MAIN,
-} from "./ipc/channels";
-import {
-  PasteError,
-  pasteText,
-  startActiveAppTracking,
-  stopActiveAppTracking,
-} from "./pasteService";
-import {
-  checkAccessibilityPermission,
-  checkAllPermissions,
-  checkMicrophonePermission,
-  openAccessibilitySettings,
-  openMicrophoneSettings,
-  requestMicrophonePermission,
-} from "./permissions/service";
-import type { AppSettings } from "./settings/schema";
-import { getSettings, updateSettings } from "./settings/store";
+  setupPermissionsHandlers,
+  setupRecordingHandlers,
+  setupSettingsHandlers,
+} from "./ipc/handlers";
+import { startActiveAppTracking, stopActiveAppTracking } from "./pasteService";
+import { getSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
+import { createShortcutHandler } from "./shortcut/handler";
 import { appStateManager } from "./state/appState";
-import {
-  abortTranscription,
-  initializeOpenAI,
-  resetOpenAI,
-  transcribe,
-} from "./transcription/service";
-import type { AppError } from "./types/electron";
+import { initializeOpenAI, resetOpenAI } from "./transcription/service";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -102,250 +83,36 @@ export function reregisterGlobalShortcut() {
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
 }
 
-function handleShortcutPress() {
-  const floatingWindow = getFloatingWindow();
-  if (!floatingWindow) return;
+// ショートカットハンドラの作成
+const handleShortcutPress = createShortcutHandler(
+  appStateManager,
+  getFloatingWindow,
+  openSettingsWindow,
+);
 
-  const currentState = appStateManager.getState();
-
-  switch (currentState) {
-    case "idle":
-    case "error": {
-      // APIキー未設定の場合は設定画面を開く
-      const settings = getSettings();
-      if (!settings.apiKey) {
-        openSettingsWindow();
-        return;
-      }
-
-      // 権限チェック
-      const micPermission = checkMicrophonePermission();
-
-      // マイク権限がない場合
-      if (micPermission !== "granted") {
-        if (micPermission === "not-determined") {
-          // 初回の場合はリクエスト
-          requestMicrophonePermission().then((granted) => {
-            if (granted) {
-              // 権限が付与されたら再度処理を実行
-              handleShortcutPress();
-            } else {
-              appStateManager.transition("error", {
-                code: ERROR_CODES.MICROPHONE_NOT_GRANTED,
-                message: ERROR_MESSAGES[ERROR_CODES.MICROPHONE_NOT_GRANTED],
-              });
-            }
-          });
-        } else {
-          appStateManager.transition("error", {
-            code: ERROR_CODES.MICROPHONE_NOT_GRANTED,
-            message: ERROR_MESSAGES[ERROR_CODES.MICROPHONE_NOT_GRANTED],
-          });
-        }
-        return;
-      }
-
-      // アクセシビリティ権限がない場合（ペースト時に必要）
-      const accessibilityPermission = checkAccessibilityPermission(false);
-      if (accessibilityPermission !== "granted") {
-        // プロンプトを表示して権限をリクエスト
-        checkAccessibilityPermission(true);
-        appStateManager.transition("error", {
-          code: ERROR_CODES.ACCESSIBILITY_NOT_GRANTED,
-          message: ERROR_MESSAGES[ERROR_CODES.ACCESSIBILITY_NOT_GRANTED],
-        });
-        return;
-      }
-
-      // アクティブアプリは既にトラッキング済みなので await 不要
-      if (appStateManager.transition("recording")) {
-        floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
-      }
-      break;
-    }
-
-    case "recording":
-      if (appStateManager.transition("transcribing")) {
-        floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.STOP_RECORDING);
-      }
-      break;
-
-    case "transcribing":
-      // 文字起こし中は何もしない
-      break;
-  }
-}
-
+/**
+ * IPC ハンドラのセットアップ
+ */
 function setupIpcHandlers() {
-  ipcMain.on(
-    IPC_RENDERER_TO_MAIN.TRANSCRIPTION_COMPLETE,
-    async (_event: Electron.IpcMainEvent, text: string) => {
-      console.log("[Main] Transcription complete:", text);
-
-      try {
-        await pasteText(text);
-        appStateManager.transition("idle");
-      } catch (error) {
-        console.error("[Main] Failed to paste:", error);
-
-        if (error instanceof PasteError) {
-          appStateManager.transition("error", {
-            code: error.code,
-            message: error.message,
-          });
-        } else {
-          appStateManager.transition("error", {
-            code: ERROR_CODES.PASTE_FAILED,
-            message: ERROR_MESSAGES[ERROR_CODES.PASTE_FAILED],
-          });
-        }
-      }
-    },
+  setupRecordingHandlers(
+    ipcMain,
+    appStateManager,
+    resizeFloatingWindow,
+    centerFloatingWindow,
   );
 
-  ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_CANCELLED, () => {
-    console.log("[Main] Recording cancelled");
-    appStateManager.transition("idle");
-  });
-
-  ipcMain.on(IPC_RENDERER_TO_MAIN.TRANSCRIBING_CANCELLED, () => {
-    console.log("[Main] Transcribing cancelled");
-    abortTranscription();
-    appStateManager.transition("idle");
-  });
-
-  ipcMain.on(
-    IPC_RENDERER_TO_MAIN.RECORDING_ERROR,
-    (_event: Electron.IpcMainEvent, error: AppError) => {
-      console.error("[Main] Recording error:", error.message);
-      appStateManager.transition("error", error);
-    },
+  setupSettingsHandlers(
+    ipcMain,
+    appStateManager,
+    openSettingsWindow,
+    handleShortcutPress,
+    showFloatingWindow,
+    hideFloatingWindow,
+    initializeOpenAI,
+    resetOpenAI,
   );
 
-  ipcMain.on(IPC_RENDERER_TO_MAIN.ERROR_DISMISSED, () => {
-    console.log("[Main] Error dismissed");
-    appStateManager.transition("idle");
-  });
-
-  ipcMain.on(
-    IPC_RENDERER_TO_MAIN.SET_WINDOW_SIZE,
-    (_event, width: number, height: number) => {
-      resizeFloatingWindow(width, height);
-    },
-  );
-
-  ipcMain.on(
-    IPC_RENDERER_TO_MAIN.CENTER_WINDOW,
-    (_event, width: number, height: number) => {
-      centerFloatingWindow(width, height);
-    },
-  );
-
-  // Settings IPC handlers
-  ipcMain.on(IPC_RENDERER_TO_MAIN.GET_SETTINGS, (event) => {
-    const settings = getSettings();
-    event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
-  });
-
-  ipcMain.on(
-    IPC_RENDERER_TO_MAIN.UPDATE_SETTINGS,
-    (event, newSettings: Partial<AppSettings>) => {
-      const oldSettings = getSettings();
-      updateSettings(newSettings);
-
-      // APIキーが変更された場合、OpenAIクライアントを更新
-      if (
-        "apiKey" in newSettings &&
-        newSettings.apiKey !== oldSettings.apiKey
-      ) {
-        if (newSettings.apiKey) {
-          initializeOpenAI(newSettings.apiKey);
-        } else {
-          resetOpenAI();
-        }
-      }
-
-      // showWindowOnIdleが変更された場合、即座に反映
-      if (
-        "showWindowOnIdle" in newSettings &&
-        newSettings.showWindowOnIdle !== oldSettings.showWindowOnIdle
-      ) {
-        const currentState = appStateManager.getState();
-        if (currentState === "idle") {
-          if (newSettings.showWindowOnIdle) {
-            showFloatingWindow();
-          } else {
-            hideFloatingWindow();
-          }
-        }
-      }
-
-      // グローバルショートカットが変更された場合、再登録
-      if (
-        "globalShortcut" in newSettings &&
-        newSettings.globalShortcut !== oldSettings.globalShortcut &&
-        newSettings.globalShortcut
-      ) {
-        const result = registerGlobalShortcut(
-          newSettings.globalShortcut,
-          handleShortcutPress,
-        );
-        if (!result.success) {
-          // 登録失敗時は元のショートカットに戻す
-          updateSettings({ globalShortcut: oldSettings.globalShortcut });
-          event.sender.send(IPC_MAIN_TO_RENDERER.SHORTCUT_ERROR, result.error);
-          // 元の設定を送信して終了
-          const restoredSettings = getSettings();
-          event.sender.send(
-            IPC_MAIN_TO_RENDERER.SETTINGS_DATA,
-            restoredSettings,
-          );
-          return;
-        }
-      }
-
-      const settings = getSettings();
-      event.sender.send(IPC_MAIN_TO_RENDERER.SETTINGS_DATA, settings);
-    },
-  );
-
-  // 設定画面を開く
-  ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS, openSettingsWindow);
-
-  // ショートカットキャプチャ開始（設定画面でショートカット入力中）
-  ipcMain.on(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_START, () => {
-    unregisterAllShortcuts();
-  });
-
-  // ショートカットキャプチャ終了
-  ipcMain.on(IPC_RENDERER_TO_MAIN.SHORTCUT_CAPTURE_END, () => {
-    reregisterGlobalShortcut();
-  });
-
-  // 文字起こし (IPC invoke)
-  ipcMain.handle(
-    IPC_INVOKE.TRANSCRIBE,
-    async (_event, audioData: ArrayBuffer) => {
-      return await transcribe(audioData);
-    },
-  );
-
-  // Permissions IPC handlers
-  ipcMain.handle(IPC_INVOKE.CHECK_PERMISSIONS, () => {
-    return checkAllPermissions();
-  });
-
-  ipcMain.handle(IPC_INVOKE.REQUEST_MICROPHONE_PERMISSION, async () => {
-    return await requestMicrophonePermission();
-  });
-
-  ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_ACCESSIBILITY_SETTINGS, () => {
-    openAccessibilitySettings();
-  });
-
-  ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS, () => {
-    openMicrophoneSettings();
-  });
+  setupPermissionsHandlers(ipcMain);
 }
 
 app.on("ready", async () => {

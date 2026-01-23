@@ -99,9 +99,18 @@ src/
 │   ├── schema.ts        # Zod スキーマ・型定義
 │   └── store.ts         # electron-store ラッパー
 ├── hooks/               # カスタムフック
-│   └── useAudioRecorder.ts
+│   ├── useAudioRecorder.ts  # 音声録音
+│   ├── useOverlayState.ts   # Main Process からの状態同期
+│   ├── useRecordingIpc.ts   # 録音 IPC リスナー
+│   └── useWindowSize.ts     # 状態に応じたウィンドウサイズ管理
 ├── components/          # React コンポーネント
-│   ├── RecordingOverlay.tsx
+│   ├── RecordingOverlay.tsx # オーバーレイ親コンポーネント
+│   ├── overlay/             # 状態別オーバーレイコンポーネント
+│   │   ├── icons.tsx        # SVG アイコン定義
+│   │   ├── IdleOverlay.tsx
+│   │   ├── RecordingStateOverlay.tsx
+│   │   ├── TranscribingOverlay.tsx
+│   │   └── ErrorOverlay.tsx
 │   ├── SettingsApp.tsx
 │   ├── ModelSelector.tsx
 │   ├── ApiKeyInput.tsx

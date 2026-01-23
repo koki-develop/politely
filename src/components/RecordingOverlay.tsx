@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WINDOW_SIZES } from "../constants/ui";
-import { getPermissionErrorType, isPermissionError } from "../errors/codes";
+import {
+  ERROR_CODES,
+  ERROR_MESSAGES,
+  getPermissionErrorType,
+  isPermissionError,
+} from "../errors/codes";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
 import type { AppState } from "../state/appState";
@@ -94,18 +99,27 @@ export const RecordingOverlay = () => {
         if (result.text) {
           window.electronAPI.sendTranscriptionComplete(result.text);
         } else {
-          window.electronAPI.sendRecordingError("No speech detected");
+          window.electronAPI.sendRecordingError({
+            code: ERROR_CODES.NO_SPEECH_DETECTED,
+            message: ERROR_MESSAGES[ERROR_CODES.NO_SPEECH_DETECTED],
+          });
         }
       } else if (result.success === false) {
-        if (result.errorCode === "API_KEY_NOT_CONFIGURED") {
+        if (result.errorCode === ERROR_CODES.API_KEY_NOT_CONFIGURED) {
           window.electronAPI.openSettings();
         }
-        window.electronAPI.sendRecordingError(result.error);
+        window.electronAPI.sendRecordingError({
+          code: result.errorCode,
+          message: result.error,
+        });
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Transcription failed";
-      window.electronAPI.sendRecordingError(errorMessage);
+      window.electronAPI.sendRecordingError({
+        code: ERROR_CODES.TRANSCRIPTION_FAILED,
+        message: errorMessage,
+      });
     }
   }, []);
 
@@ -144,7 +158,10 @@ export const RecordingOverlay = () => {
   useEffect(() => {
     if (recordError) {
       // State is managed by Main Process via onStateChanged
-      window.electronAPI.sendRecordingError(recordError);
+      window.electronAPI.sendRecordingError({
+        code: ERROR_CODES.RECORDING_FAILED,
+        message: recordError,
+      });
     }
   }, [recordError]);
 

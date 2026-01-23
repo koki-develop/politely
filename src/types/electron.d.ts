@@ -19,7 +19,7 @@ export type TranscribeSuccessResult = { success: true; text: string };
 export type TranscribeErrorResult = {
   success: false;
   error: string;
-  errorCode?: string;
+  errorCode: ErrorCode;
 };
 export type TranscribeResult = TranscribeSuccessResult | TranscribeErrorResult;
 
@@ -33,7 +33,7 @@ export interface ElectronAPI {
   sendTranscriptionComplete: (text: string) => void;
   sendRecordingCancelled: () => void;
   sendTranscribingCancelled: () => void;
-  sendRecordingError: (error: string) => void;
+  sendRecordingError: (error: AppError) => void;
   sendErrorDismissed: () => void;
   setWindowSize: (width: number, height: number) => void;
   centerWindow: (width: number, height: number) => void;

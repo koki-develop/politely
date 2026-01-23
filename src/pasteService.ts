@@ -2,6 +2,21 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { clipboard } from "electron";
 import { TIMING } from "./constants/ui";
+import { ERROR_CODES, ERROR_MESSAGES } from "./errors/codes";
+
+/**
+ * ペースト処理で発生するエラー
+ */
+export class PasteError extends Error {
+  constructor(
+    public readonly code:
+      | typeof ERROR_CODES.PASTE_FAILED
+      | typeof ERROR_CODES.NO_PREVIOUS_APP,
+  ) {
+    super(ERROR_MESSAGES[code]);
+    this.name = "PasteError";
+  }
+}
 
 const execAsync = promisify(exec);
 
@@ -98,7 +113,7 @@ function escapeAppleScriptString(str: string): string {
 async function activatePreviousAppAndPaste(): Promise<void> {
   if (!previousApp) {
     console.warn("[PasteService] No previous app saved, skipping paste");
-    return;
+    throw new PasteError(ERROR_CODES.NO_PREVIOUS_APP);
   }
 
   const sanitizedApp = escapeAppleScriptString(previousApp);
@@ -117,8 +132,6 @@ async function activatePreviousAppAndPaste(): Promise<void> {
     console.log("[PasteService] Paste simulated successfully");
   } catch (error) {
     console.error("[PasteService] Failed to simulate paste:", error);
-    throw new Error(
-      "Failed to paste. Please ensure Politely has Accessibility permissions in System Preferences > Security & Privacy > Privacy > Accessibility",
-    );
+    throw new PasteError(ERROR_CODES.PASTE_FAILED);
   }
 }

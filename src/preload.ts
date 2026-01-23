@@ -7,7 +7,11 @@ import {
   IPC_MAIN_TO_RENDERER,
   IPC_RENDERER_TO_MAIN,
 } from "./ipc/channels";
-import type { StateChangePayload, TranscribeResult } from "./types/electron";
+import type {
+  AppError,
+  StateChangePayload,
+  TranscribeResult,
+} from "./types/electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   onStartRecording: (callback: () => void) => {
@@ -33,7 +37,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   sendTranscribingCancelled: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.TRANSCRIBING_CANCELLED);
   },
-  sendRecordingError: (error: string) => {
+  sendRecordingError: (error: AppError) => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.RECORDING_ERROR, error);
   },
   sendErrorDismissed: () => {

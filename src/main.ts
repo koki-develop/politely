@@ -1,7 +1,7 @@
 import path from "node:path";
 import { app, ipcMain, Menu, Tray } from "electron";
 import started from "electron-squirrel-startup";
-import { ERROR_CODES, ERROR_MESSAGES, type ErrorCode } from "./errors/codes";
+import { ERROR_CODES, ERROR_MESSAGES } from "./errors/codes";
 import {
   centerFloatingWindow,
   createFloatingWindow,
@@ -21,6 +21,7 @@ import {
   IPC_RENDERER_TO_MAIN,
 } from "./ipc/channels";
 import {
+  PasteError,
   pasteText,
   startActiveAppTracking,
   stopActiveAppTracking,
@@ -43,6 +44,7 @@ import {
   resetOpenAI,
   transcribe,
 } from "./transcription/service";
+import type { AppError } from "./types/electron";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -177,15 +179,26 @@ function handleShortcutPress() {
 function setupIpcHandlers() {
   ipcMain.on(
     IPC_RENDERER_TO_MAIN.TRANSCRIPTION_COMPLETE,
-    async (_event, text: string) => {
+    async (_event: Electron.IpcMainEvent, text: string) => {
       console.log("[Main] Transcription complete:", text);
-
-      appStateManager.transition("idle");
 
       try {
         await pasteText(text);
+        appStateManager.transition("idle");
       } catch (error) {
         console.error("[Main] Failed to paste:", error);
+
+        if (error instanceof PasteError) {
+          appStateManager.transition("error", {
+            code: error.code,
+            message: error.message,
+          });
+        } else {
+          appStateManager.transition("error", {
+            code: ERROR_CODES.PASTE_FAILED,
+            message: ERROR_MESSAGES[ERROR_CODES.PASTE_FAILED],
+          });
+        }
       }
     },
   );
@@ -201,26 +214,13 @@ function setupIpcHandlers() {
     appStateManager.transition("idle");
   });
 
-  ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_ERROR, (_event, error: string) => {
-    console.error("[Main] Recording error:", error);
-
-    // エラー文字列をエラーコードにマッピング
-    let errorCode: ErrorCode = ERROR_CODES.RECORDING_FAILED;
-    if (error === "No speech detected") {
-      errorCode = ERROR_CODES.NO_SPEECH_DETECTED;
-    } else if (error === "API key not configured") {
-      errorCode = ERROR_CODES.API_KEY_NOT_CONFIGURED;
-    } else if (error === "Transcription cancelled") {
-      errorCode = ERROR_CODES.TRANSCRIPTION_CANCELLED;
-    } else if (error === "Transcription failed") {
-      errorCode = ERROR_CODES.TRANSCRIPTION_FAILED;
-    }
-
-    appStateManager.transition("error", {
-      code: errorCode,
-      message: ERROR_MESSAGES[errorCode],
-    });
-  });
+  ipcMain.on(
+    IPC_RENDERER_TO_MAIN.RECORDING_ERROR,
+    (_event: Electron.IpcMainEvent, error: AppError) => {
+      console.error("[Main] Recording error:", error.message);
+      appStateManager.transition("error", error);
+    },
+  );
 
   ipcMain.on(IPC_RENDERER_TO_MAIN.ERROR_DISMISSED, () => {
     console.log("[Main] Error dismissed");

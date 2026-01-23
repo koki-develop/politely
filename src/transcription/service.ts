@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
+import { ERROR_CODES } from "../errors/codes";
 import { getSettings } from "../settings/store";
 import type { TranscribeResult } from "../types/electron";
 
@@ -106,7 +107,7 @@ export async function transcribe(
       return {
         success: false,
         error: "Transcription cancelled",
-        errorCode: "CANCELLED",
+        errorCode: ERROR_CODES.TRANSCRIPTION_CANCELLED,
       };
     }
 
@@ -114,7 +115,7 @@ export async function transcribe(
       return {
         success: false,
         error: "API key not configured",
-        errorCode: "API_KEY_NOT_CONFIGURED",
+        errorCode: ERROR_CODES.API_KEY_NOT_CONFIGURED,
       };
     }
 
@@ -122,10 +123,15 @@ export async function transcribe(
       return {
         success: false,
         error: `OpenAI API Error: ${error.message}`,
+        errorCode: ERROR_CODES.TRANSCRIPTION_FAILED,
       };
     }
 
-    return { success: false, error: "Transcription failed" };
+    return {
+      success: false,
+      error: "Transcription failed",
+      errorCode: ERROR_CODES.TRANSCRIPTION_FAILED,
+    };
   } finally {
     currentAbortController = null;
   }

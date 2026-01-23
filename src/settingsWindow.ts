@@ -41,7 +41,7 @@ export function createSettingsWindow(
     maximizable: false,
     fullscreenable: false,
     show: false,
-    title: "Politely Settings",
+    title: "Settings",
     skipTaskbar: false,
     backgroundColor: "#18181b",
     webPreferences: {

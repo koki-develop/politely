@@ -127,6 +127,7 @@ src/
 │       ├── WelcomeStep.tsx
 │       ├── ApiKeyStep.tsx
 │       ├── MicrophoneStep.tsx
+│       ├── AccessibilityStep.tsx
 │       ├── ShortcutStep.tsx
 │       ├── CompleteStep.tsx
 │       └── StepIndicator.tsx
@@ -199,6 +200,9 @@ src/
 - **権限チェック API**:
   - アクセシビリティ: `systemPreferences.isTrustedAccessibilityClient(prompt)`
   - マイク: `systemPreferences.getMediaAccessStatus("microphone")` / `askForMediaAccess("microphone")`
+- **アクセシビリティ vs マイクの違い**:
+  - マイク: `askForMediaAccess()` でシステムダイアログを表示し、その場で許可/拒否が可能
+  - アクセシビリティ: `isTrustedAccessibilityClient(true)` でプロンプト表示できるが、ユーザーはシステム設定で手動許可が必要
 - **システム設定を開く**: `shell.openExternal("x-apple.systempreferences:com.apple.preference.security?Privacy_*")`
 - **Info.plist**: `forge.config.ts` の `packagerConfig.extendInfo` に `NSMicrophoneUsageDescription` を設定
 - **型マッピング**: Electron API の戻り値型（`"restricted"` 等を含む）とアプリの `PermissionStatus` 型は異なる。型キャストではなく明示的なマッピングを使用する（`src/permissions/service.ts` 参照）
@@ -243,7 +247,7 @@ src/
 ### ステップ/状態管理のパターン
 
 - **文字列リテラルを使用**: ステップや状態は数値インデックスではなく文字列リテラルで管理する
-- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "microphone", "shortcut-key", "completed"] as const`
+- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "microphone", "accessibility", "shortcut-key", "completed"] as const`
 - **完了判定**: 専用の `status` フィールドではなく、`currentStep === "completed"` で判定する
 - **型安全性**: `z.enum()` と `as const` を組み合わせて型安全なステップ管理を実現
 
@@ -257,6 +261,12 @@ src/
 3. 必要に応じて `src/preload.onboarding.ts` に IPC API を追加
 4. `src/types/electron.d.ts` の `OnboardingElectronAPI` に型を追加
 5. `src/components/OnboardingApp.tsx` でステップコンポーネントをインポート・レンダリング
+
+### 権限ステップのポーリング設計
+
+- **タイムアウトを設けない**: ポーリングにタイムアウトを設けると、タイムアウト後にユーザーが権限を付与しても検知されず、待ち続ける可能性がある
+- **コンポーネントアンマウント時にクリーンアップ**: `useEffect` の cleanup でポーリングを停止すれば、メモリリークの心配なし
+- **パターン例**: `MicrophoneStep.tsx`, `AccessibilityStep.tsx` を参照
 
 ### ウィンドウ終了時のコールバック制御
 

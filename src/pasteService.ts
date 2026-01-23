@@ -78,19 +78,6 @@ async function updateActiveApp(): Promise<void> {
   }
 }
 
-/**
- * @deprecated トラッキング中は no-op。後方互換性のために残す。
- */
-export async function savePreviousApp(): Promise<void> {
-  // トラッキング中は既に最新の情報を持っているのでスキップ
-  if (trackingInterval) {
-    return;
-  }
-  // フォールバック: トラッキングが無効な場合は従来通り取得
-  await updateActiveApp();
-  console.log("[PasteService] Saved previous app (fallback):", previousApp);
-}
-
 export async function pasteText(text: string): Promise<void> {
   clipboard.writeText(text);
 

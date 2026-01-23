@@ -80,10 +80,6 @@ export function createSettingsWindow(
   return settingsWindow;
 }
 
-export function getSettingsWindow(): BrowserWindow | null {
-  return settingsWindow;
-}
-
 export function destroySettingsWindow(): void {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.close();

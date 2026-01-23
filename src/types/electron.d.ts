@@ -15,8 +15,8 @@ export type StateChangePayload = {
   globalShortcut?: string;
 };
 
-export type TranscribeSuccessResult = { success: true; text: string };
-export type TranscribeErrorResult = {
+type TranscribeSuccessResult = { success: true; text: string };
+type TranscribeErrorResult = {
   success: false;
   error: string;
   errorCode: ErrorCode;

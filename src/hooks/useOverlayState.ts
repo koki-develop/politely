@@ -7,7 +7,7 @@ import type { AppError, StateChangePayload } from "../types/electron";
 /**
  * オーバーレイ状態フックの戻り値
  */
-export type OverlayStateHook = {
+type OverlayStateHook = {
   state: AppState;
   error: AppError | null;
   globalShortcut: string;

@@ -1,6 +1,6 @@
 import { globalShortcut } from "electron";
 
-export type ShortcutCallback = () => void;
+type ShortcutCallback = () => void;
 
 let currentAccelerator: string | null = null;
 let currentCallback: ShortcutCallback | null = null;
@@ -34,10 +34,6 @@ export function registerGlobalShortcut(
     success: false,
     error: `ショートカット "${accelerator}" の登録に失敗しました。他のアプリが使用している可能性があります。`,
   };
-}
-
-export function getCurrentAccelerator(): string | null {
-  return currentAccelerator;
 }
 
 export function unregisterAllShortcuts(): void {

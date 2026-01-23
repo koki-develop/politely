@@ -40,5 +40,3 @@ export const IPC_RENDERER_TO_MAIN = {
 // Type exports
 export type MainToRendererChannel =
   (typeof IPC_MAIN_TO_RENDERER)[keyof typeof IPC_MAIN_TO_RENDERER];
-export type RendererToMainChannel =
-  (typeof IPC_RENDERER_TO_MAIN)[keyof typeof IPC_RENDERER_TO_MAIN];

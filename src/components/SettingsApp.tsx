@@ -203,7 +203,7 @@ export const SettingsApp = () => {
           {/* Politeness Level */}
           <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
             <ModelSelector
-              label="丁寧さレベル"
+              label="丁寧さ"
               description="テキストをどの程度丁寧に変換するか"
               value={settings.politenessLevel}
               options={POLITENESS_LEVELS}

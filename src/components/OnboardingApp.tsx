@@ -6,12 +6,14 @@ import {
   DEFAULT_SHORTCUT,
   ONBOARDING_STEPS,
   type OnboardingStep,
+  type PolitenessLevel,
 } from "../settings/schema";
 import { cn } from "../utils/cn";
 import { AccessibilityStep } from "./onboarding/AccessibilityStep";
 import { ApiKeyStep } from "./onboarding/ApiKeyStep";
 import { CompleteStep } from "./onboarding/CompleteStep";
 import { MicrophoneStep } from "./onboarding/MicrophoneStep";
+import { PolitenessLevelStep } from "./onboarding/PolitenessLevelStep";
 import { ShortcutStep } from "./onboarding/ShortcutStep";
 import { StepIndicator } from "./onboarding/StepIndicator";
 import { WelcomeStep } from "./onboarding/WelcomeStep";
@@ -81,6 +83,30 @@ export const OnboardingApp = () => {
       setShortcutError("設定の保存中にエラーが発生しました。");
     }
   }, []);
+
+  const handlePolitenessLevelChange = useCallback(
+    async (politenessLevel: PolitenessLevel) => {
+      try {
+        const result = await window.onboardingAPI.updateSettings({
+          politenessLevel,
+        });
+        if (result.success) {
+          setSettings(result.settings);
+        } else {
+          console.error(
+            "[Onboarding] Failed to save politeness level:",
+            result.error,
+          );
+        }
+      } catch (error) {
+        console.error(
+          "[Onboarding] IPC error while saving politeness level:",
+          error,
+        );
+      }
+    },
+    [],
+  );
 
   const handleNext = useCallback(async () => {
     const nextIndex = currentStepIndex + 1;
@@ -204,6 +230,12 @@ export const OnboardingApp = () => {
               value={settings.globalShortcut ?? DEFAULT_SHORTCUT}
               onChange={handleShortcutChange}
               error={shortcutError}
+            />
+          )}
+          {currentStep === "politeness-level" && (
+            <PolitenessLevelStep
+              value={settings.politenessLevel}
+              onChange={handlePolitenessLevelChange}
             />
           )}
           {currentStep === "completed" && <CompleteStep />}

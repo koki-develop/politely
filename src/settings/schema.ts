@@ -70,6 +70,7 @@ export const ONBOARDING_STEPS = [
   "microphone",
   "accessibility",
   "shortcut-key",
+  "politeness-level",
   "completed",
 ] as const;
 export const OnboardingStepSchema = z.enum(ONBOARDING_STEPS);

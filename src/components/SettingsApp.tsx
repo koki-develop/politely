@@ -8,6 +8,7 @@ import {
   WHISPER_MODELS,
   type WhisperModel,
 } from "../settings/schema";
+import { cn } from "../utils/cn";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
 import { PermissionStatus } from "./PermissionStatus";
@@ -113,7 +114,14 @@ export const SettingsApp = () => {
 
         <div className="space-y-5 mb-8">
           {/* API Key */}
-          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+          <div
+            className={cn(
+              "p-4 rounded-xl border transition-colors",
+              !settings.apiKey
+                ? "bg-amber-500/5 border-amber-500/50"
+                : "bg-zinc-800/30 border-zinc-800/50",
+            )}
+          >
             <ApiKeyInput
               value={settings.apiKey ?? ""}
               onChange={handleApiKeyChange}
@@ -210,7 +218,15 @@ export const SettingsApp = () => {
         </div>
 
         <div className="space-y-5">
-          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+          <div
+            className={cn(
+              "p-4 rounded-xl border transition-colors",
+              permissions?.microphone !== "granted" ||
+                permissions?.accessibility !== "granted"
+                ? "bg-amber-500/5 border-amber-500/50"
+                : "bg-zinc-800/30 border-zinc-800/50",
+            )}
+          >
             <div className="space-y-4">
               <PermissionStatus
                 label="マイク"

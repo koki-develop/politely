@@ -1,5 +1,6 @@
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import { useCallback, useEffect, useId, useState } from "react";
+import { cn } from "../utils/cn";
 
 type ApiKeyInputProps = {
   value: string;
@@ -41,7 +42,12 @@ export const ApiKeyInput = ({ value, onChange }: ApiKeyInputProps) => {
           value={localValue}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="sk-..."
-          className="w-full h-9 px-3 pr-10 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-[13px] text-zinc-200 tracking-[-0.01em] placeholder:text-zinc-600 transition-all duration-150 ease-out hover:bg-zinc-800/80 hover:border-zinc-600/60 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/50 select-text"
+          className={cn(
+            "w-full h-9 px-3 pr-10 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-[13px] text-zinc-200 tracking-[-0.01em] placeholder:text-zinc-600 transition-all duration-150 ease-out hover:bg-zinc-800/80 hover:border-zinc-600/60 focus:outline-none focus:ring-2 select-text",
+            !localValue
+              ? "focus:ring-amber-500/40 focus:border-amber-500/50"
+              : "focus:ring-violet-500/40 focus:border-violet-500/50",
+          )}
         />
         <button
           type="button"

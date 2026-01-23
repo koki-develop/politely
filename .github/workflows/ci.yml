@@ -1,0 +1,40 @@
+name: CI
+
+defaults:
+  run:
+    shell: bash
+
+permissions: {}
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+
+      - run: bun run make -- --arch="${BUILD_ARCH}" --platform=darwin
+        env:
+          BUILD_ARCH: ${{ matrix.arch }}
+      - run: ls -la "out/make/zip/darwin/${BUILD_ARCH}/"
+        env:
+          BUILD_ARCH: ${{ matrix.arch }}

@@ -3,6 +3,8 @@
  * Main Process is the Single Source of Truth.
  */
 
+import type { AppError } from "../types/electron";
+
 export type AppState = "idle" | "recording" | "transcribing" | "error";
 
 type StateTransition = {
@@ -22,26 +24,31 @@ const VALID_TRANSITIONS: StateTransition[] = [
   { from: "error", to: "recording" }, // Retry
 ];
 
-type StateChangeListener = (state: AppState, error?: string | null) => void;
+/**
+ * 状態変更リスナーの型（AppError に対応）
+ */
+type StateChangeListener = (state: AppState, error?: AppError | null) => void;
 
 export class AppStateManager {
   private state: AppState = "idle";
-  private error: string | null = null;
+  private error: AppError | null = null;
   private listeners: Set<StateChangeListener> = new Set();
 
   getState(): AppState {
     return this.state;
   }
 
-  getError(): string | null {
+  getError(): AppError | null {
     return this.error;
   }
 
   /**
-   * Attempt to transition to a new state.
-   * Returns true if transition was valid and performed, false otherwise.
+   * 状態遷移
+   * @param to 遷移先の状態
+   * @param error エラー情報（AppError オブジェクト）
+   * @returns 遷移が成功した場合は true
    */
-  transition(to: AppState, error?: string | null): boolean {
+  transition(to: AppState, error?: AppError | null): boolean {
     const isValid = VALID_TRANSITIONS.some((t) => {
       const fromMatch = Array.isArray(t.from)
         ? t.from.includes(this.state)
@@ -65,7 +72,7 @@ export class AppStateManager {
    * Force set state (for initialization or recovery).
    * Use sparingly - prefer transition() for normal operations.
    */
-  forceState(state: AppState, error?: string | null): void {
+  forceState(state: AppState, error?: AppError | null): void {
     console.log(`[AppState] Force set: ${this.state} -> ${state}`);
     this.state = state;
     this.error = state === "error" ? (error ?? null) : null;

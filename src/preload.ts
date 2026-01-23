@@ -7,7 +7,7 @@ import {
   IPC_MAIN_TO_RENDERER,
   IPC_RENDERER_TO_MAIN,
 } from "./ipc/channels";
-import type { TranscribeResult } from "./types/electron";
+import type { StateChangePayload, TranscribeResult } from "./types/electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   onStartRecording: (callback: () => void) => {
@@ -16,11 +16,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onStopRecording: (callback: () => void) => {
     ipcRenderer.on(IPC_MAIN_TO_RENDERER.STOP_RECORDING, callback);
   },
-  onStateChanged: (
-    callback: (payload: { state: string; error: string | null }) => void,
-  ) => {
-    ipcRenderer.on(IPC_MAIN_TO_RENDERER.STATE_CHANGED, (_event, payload) =>
-      callback(payload),
+  onStateChanged: (callback: (payload: StateChangePayload) => void) => {
+    ipcRenderer.on(
+      IPC_MAIN_TO_RENDERER.STATE_CHANGED,
+      (_event: Electron.IpcRendererEvent, payload: StateChangePayload) =>
+        callback(payload),
     );
   },
 

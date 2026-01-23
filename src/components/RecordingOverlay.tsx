@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { WINDOW_SIZES } from "../constants/ui";
+import { getPermissionErrorType, isPermissionError } from "../errors/codes";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { IPC_MAIN_TO_RENDERER } from "../ipc/channels";
 import type { AppState } from "../state/appState";
-import type { StateChangePayload, TranscribeResult } from "../types/electron";
+import type {
+  AppError,
+  StateChangePayload,
+  TranscribeResult,
+} from "../types/electron";
+import { formatShortcut } from "../utils/shortcut";
 
 // Alias for clarity - renderer uses same states as main process
 type OverlayState = AppState;
-
-const WINDOW_SIZE_IDLE = { width: 130, height: 32 };
-const WINDOW_SIZE_RECORDING = { width: 130, height: 56 };
-const WINDOW_SIZE_TRANSCRIBING = { width: 100, height: 56 };
-const WINDOW_SIZE_ERROR = { width: 280, height: 100 };
-const WINDOW_SIZE_ERROR_WITH_ACTION = { width: 280, height: 120 };
 
 // Static SVG Icons (hoisted to avoid re-creation on each render)
 const micIcon = (
@@ -62,7 +63,10 @@ export const RecordingOverlay = () => {
   } = useAudioRecorder();
 
   const [overlayState, setOverlayState] = useState<OverlayState>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AppError | null>(null);
+  const [globalShortcut, setGlobalShortcut] = useState<string>(
+    "CommandOrControl+Shift+Space",
+  );
   const isCancelledRef = useRef(false);
 
   // Subscribe to state changes from Main Process (Single Source of Truth)
@@ -70,6 +74,9 @@ export const RecordingOverlay = () => {
     window.electronAPI.onStateChanged((payload: StateChangePayload) => {
       setOverlayState(payload.state);
       setError(payload.error);
+      if (payload.globalShortcut) {
+        setGlobalShortcut(payload.globalShortcut);
+      }
     });
 
     return () => {
@@ -142,30 +149,29 @@ export const RecordingOverlay = () => {
   }, [recordError]);
 
   // 権限エラーかどうかを判定
-  const isMicrophoneError = error?.includes("マイク") ?? false;
-  const isAccessibilityError = error?.includes("アクセシビリティ") ?? false;
-  const isPermissionError = isMicrophoneError || isAccessibilityError;
+  const permissionError = error ? isPermissionError(error.code) : false;
+  const permissionErrorType = error ? getPermissionErrorType(error.code) : null;
 
   useEffect(() => {
     if (overlayState === "error") {
       // 権限エラーの場合はアクションボタン用に大きめのサイズ
-      const size = isPermissionError
-        ? WINDOW_SIZE_ERROR_WITH_ACTION
-        : WINDOW_SIZE_ERROR;
+      const size = permissionError
+        ? WINDOW_SIZES.ERROR_WITH_ACTION
+        : WINDOW_SIZES.ERROR;
       window.electronAPI.centerWindow(size.width, size.height);
     } else {
       const sizes = {
-        idle: WINDOW_SIZE_IDLE,
-        recording: WINDOW_SIZE_RECORDING,
-        transcribing: WINDOW_SIZE_TRANSCRIBING,
-        error: WINDOW_SIZE_ERROR,
+        idle: WINDOW_SIZES.IDLE,
+        recording: WINDOW_SIZES.RECORDING,
+        transcribing: WINDOW_SIZES.TRANSCRIBING,
+        error: WINDOW_SIZES.ERROR,
       };
       window.electronAPI.setWindowSize(
         sizes[overlayState].width,
         sizes[overlayState].height,
       );
     }
-  }, [overlayState, isPermissionError]);
+  }, [overlayState, permissionError]);
 
   const handleCancel = useCallback(() => {
     isCancelledRef.current = true;
@@ -189,7 +195,9 @@ export const RecordingOverlay = () => {
     return (
       <div className="w-full h-full flex items-center justify-center gap-2 glass-bg rounded-full border border-white/10 animate-breathe select-none [-webkit-app-region:drag]">
         {micIcon}
-        <span className="text-zinc-500 text-[10px]">⌘⇧Space</span>
+        <span className="text-zinc-500 text-[10px]">
+          {formatShortcut(globalShortcut)}
+        </span>
       </div>
     );
   }
@@ -204,7 +212,9 @@ export const RecordingOverlay = () => {
             <div className="absolute w-4 h-4 rounded-full bg-gradient-to-r from-red-500/40 to-orange-500/40 animate-pulse-ring" />
             <div className="w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500" />
           </div>
-          <span className="text-zinc-500 text-[10px]">⌘⇧Space</span>
+          <span className="text-zinc-500 text-[10px]">
+            {formatShortcut(globalShortcut)}
+          </span>
         </div>
         <button
           type="button"
@@ -241,9 +251,9 @@ export const RecordingOverlay = () => {
   // Error State
   if (overlayState === "error" && error) {
     const handleOpenSettings = () => {
-      if (isMicrophoneError) {
+      if (permissionErrorType === "microphone") {
         window.electronAPI.openMicrophoneSettings();
-      } else if (isAccessibilityError) {
+      } else if (permissionErrorType === "accessibility") {
         window.electronAPI.openAccessibilitySettings();
       }
       handleDismissError();
@@ -255,12 +265,12 @@ export const RecordingOverlay = () => {
           {alertIcon}
           <div className="max-h-12 overflow-y-auto [-webkit-app-region:no-drag]">
             <span className="text-red-400 text-xs break-all block">
-              {error}
+              {error.message}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-3 mt-2 [-webkit-app-region:no-drag]">
-          {isPermissionError && (
+          {permissionError && (
             <button
               type="button"
               onClick={handleOpenSettings}

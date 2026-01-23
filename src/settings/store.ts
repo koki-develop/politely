@@ -45,13 +45,23 @@ export function getSettingsStore(): Store<AppSettings> {
 // 設定の取得ヘルパー
 export function getSettings(): AppSettings {
   const s = getSettingsStore();
-  return {
+  const raw = {
     apiKey: s.get("apiKey"),
     whisperModel: s.get("whisperModel"),
     gptModel: s.get("gptModel"),
     showWindowOnIdle: s.get("showWindowOnIdle"),
     globalShortcut: s.get("globalShortcut"),
   };
+
+  const result = AppSettingsSchema.safeParse(raw);
+  if (!result.success) {
+    console.warn(
+      "[Settings] Invalid stored settings, using defaults:",
+      result.error.flatten(),
+    );
+    return DEFAULT_SETTINGS;
+  }
+  return result.data;
 }
 
 // 設定の更新ヘルパー

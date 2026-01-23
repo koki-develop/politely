@@ -1,6 +1,7 @@
 import path from "node:path";
 import { app, ipcMain, Menu, Tray } from "electron";
 import started from "electron-squirrel-startup";
+import { ERROR_CODES, ERROR_MESSAGES, type ErrorCode } from "./errors/codes";
 import {
   centerFloatingWindow,
   createFloatingWindow,
@@ -77,9 +78,11 @@ function broadcastStateChange() {
   const floatingWindow = getFloatingWindow();
   if (!floatingWindow) return;
 
+  const settings = getSettings();
   floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.STATE_CHANGED, {
     state: appStateManager.getState(),
     error: appStateManager.getError(),
+    globalShortcut: settings.globalShortcut,
   });
 }
 
@@ -125,17 +128,17 @@ function handleShortcutPress() {
               // 権限が付与されたら再度処理を実行
               handleShortcutPress();
             } else {
-              appStateManager.transition(
-                "error",
-                "マイクへのアクセスを許可してください。",
-              );
+              appStateManager.transition("error", {
+                code: ERROR_CODES.MICROPHONE_NOT_GRANTED,
+                message: ERROR_MESSAGES[ERROR_CODES.MICROPHONE_NOT_GRANTED],
+              });
             }
           });
         } else {
-          appStateManager.transition(
-            "error",
-            "マイクへのアクセスを許可してください。",
-          );
+          appStateManager.transition("error", {
+            code: ERROR_CODES.MICROPHONE_NOT_GRANTED,
+            message: ERROR_MESSAGES[ERROR_CODES.MICROPHONE_NOT_GRANTED],
+          });
         }
         return;
       }
@@ -145,10 +148,10 @@ function handleShortcutPress() {
       if (accessibilityPermission !== "granted") {
         // プロンプトを表示して権限をリクエスト
         checkAccessibilityPermission(true);
-        appStateManager.transition(
-          "error",
-          "アクセシビリティへのアクセスを許可してください。",
-        );
+        appStateManager.transition("error", {
+          code: ERROR_CODES.ACCESSIBILITY_NOT_GRANTED,
+          message: ERROR_MESSAGES[ERROR_CODES.ACCESSIBILITY_NOT_GRANTED],
+        });
         return;
       }
 
@@ -200,7 +203,23 @@ function setupIpcHandlers() {
 
   ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_ERROR, (_event, error: string) => {
     console.error("[Main] Recording error:", error);
-    appStateManager.transition("error", error);
+
+    // エラー文字列をエラーコードにマッピング
+    let errorCode: ErrorCode = ERROR_CODES.RECORDING_FAILED;
+    if (error === "No speech detected") {
+      errorCode = ERROR_CODES.NO_SPEECH_DETECTED;
+    } else if (error === "API key not configured") {
+      errorCode = ERROR_CODES.API_KEY_NOT_CONFIGURED;
+    } else if (error === "Transcription cancelled") {
+      errorCode = ERROR_CODES.TRANSCRIPTION_CANCELLED;
+    } else if (error === "Transcription failed") {
+      errorCode = ERROR_CODES.TRANSCRIPTION_FAILED;
+    }
+
+    appStateManager.transition("error", {
+      code: errorCode,
+      message: ERROR_MESSAGES[errorCode],
+    });
   });
 
   ipcMain.on(IPC_RENDERER_TO_MAIN.ERROR_DISMISSED, () => {

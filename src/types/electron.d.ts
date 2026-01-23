@@ -2,10 +2,17 @@ import type { AppState } from "../state/appState";
 import type { MainToRendererChannel } from "../ipc/channels";
 import type { PermissionsState } from "../permissions/service";
 import type { AppSettings } from "../settings/schema";
+import type { ErrorCode } from "../errors/codes";
+
+export type AppError = {
+  code: ErrorCode;
+  message: string;
+};
 
 export type StateChangePayload = {
   state: AppState;
-  error: string | null;
+  error: AppError | null;
+  globalShortcut?: string;
 };
 
 export type TranscribeSuccessResult = { success: true; text: string };

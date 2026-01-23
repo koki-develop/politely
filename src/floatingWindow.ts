@@ -1,5 +1,6 @@
 import path from "node:path";
 import { BrowserWindow, screen } from "electron";
+import { FLOATING_WINDOW } from "./constants/ui";
 
 let floatingWindow: BrowserWindow | null = null;
 
@@ -11,9 +12,9 @@ export function createFloatingWindow(preloadPath: string): BrowserWindow {
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
 
-  const windowWidth = 130;
-  const windowHeight = 32;
-  const bottomMargin = -16;
+  const windowWidth = FLOATING_WINDOW.DEFAULT_WIDTH;
+  const windowHeight = FLOATING_WINDOW.DEFAULT_HEIGHT;
+  const bottomMargin = FLOATING_WINDOW.BOTTOM_MARGIN;
 
   const x = Math.floor((screenWidth - windowWidth) / 2);
   const y = screenHeight - windowHeight - bottomMargin;
@@ -78,9 +79,8 @@ export function resizeFloatingWindow(width: number, height: number): void {
 
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
-  const bottomMargin = -16;
   const x = Math.floor((screenWidth - width) / 2);
-  const y = screenHeight - height - bottomMargin;
+  const y = screenHeight - height - FLOATING_WINDOW.BOTTOM_MARGIN;
 
   floatingWindow.setBounds({ x, y, width, height });
 }

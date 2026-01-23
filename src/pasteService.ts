@@ -1,12 +1,12 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { clipboard } from "electron";
+import { TIMING } from "./constants/ui";
 
 const execAsync = promisify(exec);
 
 let previousApp: string | null = null;
 let trackingInterval: ReturnType<typeof setInterval> | null = null;
-const TRACKING_INTERVAL_MS = 500;
 
 // フローティングウィンドウのアプリ名（自分自身を除外するため）
 const EXCLUDED_APP_NAMES = ["politely", "electron"];
@@ -20,7 +20,7 @@ export function startActiveAppTracking(): void {
 
   trackingInterval = setInterval(() => {
     updateActiveApp();
-  }, TRACKING_INTERVAL_MS);
+  }, TIMING.ACTIVE_APP_TRACKING_INTERVAL_MS);
 
   // 初回即実行
   updateActiveApp();
@@ -80,7 +80,9 @@ export async function pasteText(text: string): Promise<void> {
   clipboard.writeText(text);
 
   // クリップボードへの書き込みが OS に反映されるのを待つ
-  await new Promise((resolve) => setTimeout(resolve, 50));
+  await new Promise((resolve) =>
+    setTimeout(resolve, TIMING.CLIPBOARD_WRITE_DELAY_MS),
+  );
 
   if (process.platform === "darwin") {
     await activatePreviousAppAndPaste();

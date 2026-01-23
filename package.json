@@ -44,6 +44,7 @@
     "vite": "6.4.1"
   },
   "dependencies": {
+    "@tabler/icons-react": "3.36.1",
     "@tailwindcss/vite": "4.1.18",
     "electron-squirrel-startup": "1.0.1",
     "electron-store": "11.0.2",

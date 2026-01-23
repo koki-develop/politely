@@ -129,6 +129,7 @@ src/
 │       ├── MicrophoneStep.tsx
 │       ├── AccessibilityStep.tsx
 │       ├── ShortcutStep.tsx
+│       ├── PolitenessLevelStep.tsx
 │       ├── CompleteStep.tsx
 │       └── StepIndicator.tsx
 └── types/               # 型定義
@@ -247,7 +248,7 @@ src/
 ### ステップ/状態管理のパターン
 
 - **文字列リテラルを使用**: ステップや状態は数値インデックスではなく文字列リテラルで管理する
-- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "microphone", "accessibility", "shortcut-key", "completed"] as const`
+- **例**: `ONBOARDING_STEPS = ["welcome", "api-key", "microphone", "accessibility", "shortcut-key", "politeness-level", "completed"] as const`
 - **完了判定**: 専用の `status` フィールドではなく、`currentStep === "completed"` で判定する
 - **型安全性**: `z.enum()` と `as const` を組み合わせて型安全なステップ管理を実現
 

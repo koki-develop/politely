@@ -75,7 +75,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - run: bun run ./scripts/build-cask.ts "$(jq -r .version < package.json)" --out ./politely.rb
+      - run: bun run ./scripts/build-cask.ts "${RELEASE_TAG#v}" --out ./politely.rb
+        env:
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag }}
 
       - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         id: app-token

@@ -26,7 +26,6 @@ import {
   createOnboardingWindow,
   destroyOnboardingWindow,
 } from "./onboardingWindow";
-import { startActiveAppTracking, stopActiveAppTracking } from "./pasteService";
 import { getSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { createShortcutHandler } from "./shortcut/handler";
@@ -162,9 +161,6 @@ function initializeFloatingWindow() {
   // グローバルショートカットを登録
   const settings = getSettings();
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
-
-  // アクティブアプリのトラッキングを開始
-  startActiveAppTracking();
 }
 
 app.on("ready", async () => {
@@ -206,7 +202,6 @@ app.on("window-all-closed", () => {
 });
 
 app.on("will-quit", () => {
-  stopActiveAppTracking();
   unregisterAllShortcuts();
 });
 

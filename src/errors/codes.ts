@@ -13,7 +13,6 @@ export const ERROR_CODES = {
 
   // Paste errors
   PASTE_FAILED: "PASTE_FAILED",
-  NO_PREVIOUS_APP: "NO_PREVIOUS_APP",
 
   // Recording errors
   RECORDING_FAILED: "RECORDING_FAILED",
@@ -34,7 +33,6 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ERROR_CODES.TRANSCRIPTION_FAILED]: "文字起こしに失敗しました。",
   [ERROR_CODES.TRANSCRIPTION_CANCELLED]: "文字起こしがキャンセルされました。",
   [ERROR_CODES.PASTE_FAILED]: "ペーストに失敗しました。",
-  [ERROR_CODES.NO_PREVIOUS_APP]: "ペースト先のアプリが見つかりません。",
   [ERROR_CODES.RECORDING_FAILED]: "録音に失敗しました。",
   [ERROR_CODES.NO_SPEECH_DETECTED]: "音声が検出されませんでした。",
 };

@@ -8,75 +8,13 @@ import { ERROR_CODES, ERROR_MESSAGES } from "./errors/codes";
  * ペースト処理で発生するエラー
  */
 export class PasteError extends Error {
-  constructor(
-    public readonly code:
-      | typeof ERROR_CODES.PASTE_FAILED
-      | typeof ERROR_CODES.NO_PREVIOUS_APP,
-  ) {
+  constructor(public readonly code: typeof ERROR_CODES.PASTE_FAILED) {
     super(ERROR_MESSAGES[code]);
     this.name = "PasteError";
   }
 }
 
 const execAsync = promisify(exec);
-
-let previousApp: string | null = null;
-let trackingInterval: ReturnType<typeof setInterval> | null = null;
-
-// フローティングウィンドウのアプリ名（自分自身を除外するため）
-const EXCLUDED_APP_NAMES = ["politely", "electron"];
-
-/**
- * アクティブアプリのリアルタイムトラッキングを開始
- * 500ms間隔でフォアグラウンドアプリを監視し、previousApp を更新する
- */
-export function startActiveAppTracking(): void {
-  if (trackingInterval) return;
-
-  trackingInterval = setInterval(() => {
-    updateActiveApp();
-  }, TIMING.ACTIVE_APP_TRACKING_INTERVAL_MS);
-
-  // 初回即実行
-  updateActiveApp();
-  console.log("[PasteService] Active app tracking started");
-}
-
-/**
- * アクティブアプリのトラッキングを停止
- */
-export function stopActiveAppTracking(): void {
-  if (trackingInterval) {
-    clearInterval(trackingInterval);
-    trackingInterval = null;
-    console.log("[PasteService] Active app tracking stopped");
-  }
-}
-
-/**
- * 現在のアクティブアプリを取得して previousApp を更新
- */
-async function updateActiveApp(): Promise<void> {
-  if (process.platform === "darwin") {
-    try {
-      const script = `
-        tell application "System Events"
-          set frontApp to name of first application process whose frontmost is true
-        end tell
-        return frontApp
-      `;
-      const { stdout } = await execAsync(`osascript -e '${script}'`);
-      const appName = stdout.trim();
-
-      // 自分自身や Electron 以外のアプリのみ記録
-      if (appName && !EXCLUDED_APP_NAMES.includes(appName.toLowerCase())) {
-        previousApp = appName;
-      }
-    } catch {
-      // ポーリングなのでエラーは静かに無視
-    }
-  }
-}
 
 export async function pasteText(text: string): Promise<void> {
   clipboard.writeText(text);
@@ -87,28 +25,14 @@ export async function pasteText(text: string): Promise<void> {
   );
 
   if (process.platform === "darwin") {
-    await activatePreviousAppAndPaste();
+    await simulatePaste();
   } else {
     console.warn("[PasteService] Only macOS is supported currently");
   }
 }
 
-function escapeAppleScriptString(str: string): string {
-  return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-async function activatePreviousAppAndPaste(): Promise<void> {
-  if (!previousApp) {
-    console.warn("[PasteService] No previous app saved, skipping paste");
-    throw new PasteError(ERROR_CODES.NO_PREVIOUS_APP);
-  }
-
-  const sanitizedApp = escapeAppleScriptString(previousApp);
+async function simulatePaste(): Promise<void> {
   const script = `
-    tell application "${sanitizedApp}"
-      activate
-    end tell
-    delay 0.1
     tell application "System Events"
       keystroke "v" using command down
     end tell

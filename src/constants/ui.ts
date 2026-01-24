@@ -24,6 +24,4 @@ export const FLOATING_WINDOW = {
 export const TIMING = {
   /** クリップボード書き込み後の遅延（ミリ秒） */
   CLIPBOARD_WRITE_DELAY_MS: 50,
-  /** アクティブアプリのトラッキング間隔（ミリ秒） */
-  ACTIVE_APP_TRACKING_INTERVAL_MS: 500,
 } as const;

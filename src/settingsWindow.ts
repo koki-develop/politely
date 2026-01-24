@@ -20,7 +20,7 @@ export function createSettingsWindow(
     screen.getPrimaryDisplay().workAreaSize;
 
   const windowWidth = 480;
-  const windowHeight = 400;
+  const windowHeight = 600;
   const minWidth = 400;
   const minHeight = 300;
 

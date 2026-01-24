@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/koki-develop/politely/compare/v0.0.5...v0.0.6) (2026-01-24)
+
+
+### Bug Fixes
+
+* resolve koffi native module not found error in packaged app ([93faffa](https://github.com/koki-develop/politely/commit/93faffa4678f70af94fb4d4ce184898896ee5c75))
+
 ## [0.0.5](https://github.com/koki-develop/politely/compare/v0.0.4...v0.0.5) (2026-01-24)
 
 

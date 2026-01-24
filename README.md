@@ -11,6 +11,7 @@
 <a href="https://github.com/koki-develop/politely/releases/latest"><img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/koki-develop/politely?style=flat"></a>
 <a href="./LICENSE"><img src="https://img.shields.io/github/license/koki-develop/politely?style=flat" /></a>
 <a href="https://github.com/koki-develop/politely/actions/workflows/ci.yml"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/koki-develop/politely/ci.yml?branch=main&logo=github&style=flat" /></a>
+<img alt="macOS" src="https://img.shields.io/badge/platform-macOS-blue?style=flat" />
 </p>
 
 <p align="center">

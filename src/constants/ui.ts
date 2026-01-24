@@ -5,7 +5,7 @@ export const WINDOW_SIZES = {
   IDLE: { width: 110, height: 32 },
   PREPARING: { width: 130, height: 56 },
   RECORDING: { width: 130, height: 56 },
-  TRANSCRIBING: { width: 100, height: 56 },
+  TRANSCRIBING: { width: 130, height: 56 },
   ERROR: { width: 280, height: 100 },
   ERROR_WITH_ACTION: { width: 280, height: 120 },
 } as const;

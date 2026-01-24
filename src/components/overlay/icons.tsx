@@ -38,13 +38,47 @@ export const PulseRingGray = (): JSX.Element => (
 );
 
 /**
- * 処理中のウェーブドット
+ * 文字起こし中のスピナーリング
+ * 琥珀からオレンジへのグラデーションアークが回転
  */
-export const WaveDots = (): JSX.Element => (
-  <div className="flex items-center justify-center gap-1.5 h-4">
-    <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave" />
-    <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave-delay-1" />
-    <div className="w-2 h-2 rounded-full bg-amber-400 animate-wave-delay-2" />
+export const SpinnerRing = (): JSX.Element => (
+  <div className="relative flex items-center justify-center w-4 h-4">
+    <svg
+      className="w-4 h-4 animate-spin-progress"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        fill="none"
+        className="text-amber-400/20"
+      />
+      <path
+        d="M12 2a10 10 0 0 1 10 10"
+        stroke="url(#spinner-gradient)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <defs>
+        <linearGradient
+          id="spinner-gradient"
+          x1="12"
+          y1="2"
+          x2="22"
+          y2="12"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#fb923c" />
+        </linearGradient>
+      </defs>
+    </svg>
   </div>
 );
 

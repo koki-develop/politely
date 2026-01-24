@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { useCallback } from "react";
-import { WaveDots } from "./icons";
+import { SpinnerRing } from "./icons";
 
 type Props = {
   onCancel: () => void;
@@ -21,7 +21,10 @@ export function TranscribingOverlay({ onCancel }: Props): JSX.Element {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-1 glass-bg rounded-2xl border border-amber-500/30 select-none [-webkit-app-region:drag]">
-      <WaveDots />
+      {/* スピナー（Recordingのアイコン+テキストと高さを揃える） */}
+      <div className="flex items-center justify-center h-4">
+        <SpinnerRing />
+      </div>
 
       {/* キャンセルボタン */}
       <button

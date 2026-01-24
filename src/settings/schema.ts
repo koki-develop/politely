@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Whisper モデル選択肢
 export const WHISPER_MODELS = ["whisper-1"] as const;
-export const WhisperModelSchema = z.enum(WHISPER_MODELS);
+const WhisperModelSchema = z.enum(WHISPER_MODELS);
 export type WhisperModel = z.infer<typeof WhisperModelSchema>;
 
 // GPT モデル選択肢（gpt-5 系 / gpt-4.1 系）
@@ -18,7 +18,7 @@ export const GPT_MODELS = [
   "gpt-4.1-mini",
   "gpt-4.1-nano",
 ] as const;
-export const GptModelSchema = z.enum(GPT_MODELS);
+const GptModelSchema = z.enum(GPT_MODELS);
 export type GptModel = z.infer<typeof GptModelSchema>;
 
 // 丁寧さレベル選択肢
@@ -75,7 +75,7 @@ export const ONBOARDING_STEPS = [
   "politeness-level",
   "completed",
 ] as const;
-export const OnboardingStepSchema = z.enum(ONBOARDING_STEPS);
+const OnboardingStepSchema = z.enum(ONBOARDING_STEPS);
 export type OnboardingStep = z.infer<typeof OnboardingStepSchema>;
 
 export const OnboardingStateSchema = z.object({

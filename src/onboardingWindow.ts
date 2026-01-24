@@ -97,7 +97,3 @@ export function destroyOnboardingWindow(): void {
     onboardingWindow = null;
   }
 }
-
-export function getOnboardingWindow(): BrowserWindow | null {
-  return onboardingWindow;
-}

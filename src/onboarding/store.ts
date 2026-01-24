@@ -16,7 +16,7 @@ const schema = {
 // シングルトンインスタンス
 let store: Store<OnboardingState> | null = null;
 
-export function getOnboardingStore(): Store<OnboardingState> {
+function getOnboardingStore(): Store<OnboardingState> {
   if (!store) {
     store = new Store<OnboardingState>({
       name: "onboarding",

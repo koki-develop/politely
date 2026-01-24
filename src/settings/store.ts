@@ -39,7 +39,7 @@ const schema = {
 // シングルトンインスタンス
 let store: Store<AppSettings> | null = null;
 
-export function getSettingsStore(): Store<AppSettings> {
+function getSettingsStore(): Store<AppSettings> {
   if (!store) {
     store = new Store<AppSettings>({
       name: "settings",

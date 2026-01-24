@@ -2,7 +2,7 @@
   "name": "politely",
   "productName": "Politely",
   "version": "0.1.0",
-  "description": "あなたの発言に社会性フィルターを。",
+  "description": "話すだけで、丁寧な文章に。",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/koki-develop/politely/compare/v0.1.0...v0.1.1) (2026-01-24)
+
+
+### Bug Fixes
+
+* update package description to better reflect app purpose ([6d46a26](https://github.com/koki-develop/politely/commit/6d46a26a2b71038e9041fcc56c3cc5797746d06d))
+
 ## [0.1.0](https://github.com/koki-develop/politely/compare/v0.0.7...v0.1.0) (2026-01-24)
 
 

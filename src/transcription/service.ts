@@ -33,7 +33,7 @@ function getOpenAI(): OpenAI {
 }
 
 const PoliteTextSchema = z.object({
-  text: z.string().describe("丁寧語に変換されたテキスト"),
+  politeText: z.string().describe("丁寧語に変換されたテキスト"),
 });
 
 // 丁寧さレベルごとのベースメッセージ
@@ -55,6 +55,10 @@ const POLITENESS_BASE_MESSAGES: Record<
 - ユーザーから提供された文章を、最小限の「です」「ます」調に変換してください
 - 元々の意味やニュアンスはできる限り変えないように注意してください
 - 文章が途中で途切れている場合も、途中までの状態で丁寧に変換してください
+
+## 出力形式
+
+- JSON 形式で出力し、 \`politeText\` フィールドに変換後の文章を含めてください
 `.trim(),
     },
     { role: "user", content: "おはよう。調子はどう？" },
@@ -79,6 +83,10 @@ const POLITENESS_BASE_MESSAGES: Record<
 - ユーザーから提供された文章を、丁寧な文章に変換してください
 - 元々の意味やニュアンスはできる限り変えないように注意してください
 - 文章が途中で途切れている場合も、途中までの状態で丁寧に変換してください
+
+## 出力形式
+
+- JSON 形式で出力し、 \`politeText\` フィールドに変換後の文章を含めてください
 `.trim(),
     },
     { role: "user", content: "おはよう。調子はどう？" },
@@ -109,6 +117,10 @@ const POLITENESS_BASE_MESSAGES: Record<
 - ユーザーから提供された文章を、非常に丁寧な文章に変換してください
 - 元々の意味やニュアンスはできる限り変えないように注意してください
 - 文章が途中で途切れている場合も、途中までの状態で丁寧に変換してください
+
+## 出力形式
+
+- JSON 形式で出力し、 \`politeText\` フィールドに変換後の文章を含めてください
 `.trim(),
     },
     { role: "user", content: "おはよう。調子はどう？" },
@@ -143,6 +155,10 @@ const POLITENESS_BASE_MESSAGES: Record<
 - ユーザーから提供された文章を、できる限り過剰に丁寧な文章に変換してください
 - 元々の意味やニュアンスはできる限り変えないように注意してください
 - 文章が途中で途切れている場合も、途中までの状態で丁寧に変換してください
+
+## 出力形式
+
+- JSON 形式で出力し、 \`politeText\` フィールドに変換後の文章を含めてください
 `.trim(),
     },
     { role: "user", content: "おはよう。調子はどう？" },
@@ -198,7 +214,7 @@ const convertToPolite = async (
     throw new Error("Failed to parse polite text response");
   }
 
-  return message.parsed.text;
+  return message.parsed.politeText;
 };
 
 export async function transcribe(

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ERROR_CODES } from "../errors/codes";
 
 type RecordingState = "idle" | "recording" | "processing";
 
@@ -91,6 +92,9 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
       setState("recording");
+
+      // Main Process に録音開始を通知（preparing -> recording）
+      window.electronAPI.sendRecordingStarted();
     },
     [releaseStream, warmUpStream],
   );
@@ -105,13 +109,21 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
       try {
         setupAndStartRecording(streamRef.current);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to start recording",
-        );
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to start recording";
+        console.error("[AudioRecorder] Failed to start recording:", err);
+        setError(errorMessage);
         setState("idle");
+        window.electronAPI.sendRecordingError({
+          code: ERROR_CODES.RECORDING_FAILED,
+          message: errorMessage,
+        });
       }
     } else {
       // フォールバック: ストリームがない場合は取得してから開始
+      console.warn(
+        "[AudioRecorder] Stream not pre-warmed, acquiring on demand",
+      );
       (async () => {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
@@ -120,10 +132,18 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
           streamRef.current = stream;
           setupAndStartRecording(stream);
         } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to start recording",
+          const errorMessage =
+            err instanceof Error ? err.message : "Failed to start recording";
+          console.error(
+            "[AudioRecorder] Failed to start recording in fallback:",
+            err,
           );
+          setError(errorMessage);
           setState("idle");
+          window.electronAPI.sendRecordingError({
+            code: ERROR_CODES.RECORDING_FAILED,
+            message: errorMessage,
+          });
         }
       })();
     }

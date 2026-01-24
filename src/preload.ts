@@ -29,6 +29,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     );
   },
 
+  sendRecordingStarted: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.RECORDING_STARTED);
+  },
   sendTranscriptionComplete: (text: string) => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.TRANSCRIPTION_COMPLETE, text);
   },

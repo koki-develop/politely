@@ -28,6 +28,16 @@ export const PulseRing = (): JSX.Element => (
 );
 
 /**
+ * 準備中のパルスリング（グレー）
+ */
+export const PulseRingGray = (): JSX.Element => (
+  <div className="relative flex items-center justify-center">
+    <div className="absolute w-4 h-4 rounded-full bg-zinc-500/40 animate-pulse-ring" />
+    <div className="w-2 h-2 rounded-full bg-zinc-500" />
+  </div>
+);
+
+/**
  * 処理中のウェーブドット
  */
 export const WaveDots = (): JSX.Element => (

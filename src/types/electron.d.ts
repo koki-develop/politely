@@ -30,6 +30,7 @@ export interface ElectronAPI {
   onStateChanged: (callback: (payload: StateChangePayload) => void) => void;
 
   // Renderer -> Main senders
+  sendRecordingStarted: () => void;
   sendTranscriptionComplete: (text: string) => void;
   sendRecordingCancelled: () => void;
   sendTranscribingCancelled: () => void;

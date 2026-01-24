@@ -28,6 +28,10 @@ export function createShortcutHandler(
         );
         break;
 
+      case "preparing":
+        // preparing 中はショートカットを無視
+        break;
+
       case "recording":
         handleRecordingState(appStateManager, floatingWindow);
         break;
@@ -48,24 +52,35 @@ async function handleIdleOrErrorState(
   floatingWindow: BrowserWindow,
   openSettingsWindow: () => void,
 ): Promise<void> {
-  // 1. APIキーの確認
+  // 1. APIキーの確認（同期処理）
   const settings = getSettings();
   if (!settings.apiKey) {
     openSettingsWindow();
     return;
   }
 
-  // 2. 権限チェック
-  const permissionResult = await checkRecordingPermissions();
-  if (!permissionResult.success) {
-    appStateManager.transition("error", permissionResult.error);
+  // 2. まず preparing に遷移（即座にUIを更新）
+  if (!appStateManager.transition("preparing")) {
+    console.warn(
+      `[Shortcut] Cannot transition to preparing. Current state: ${appStateManager.getState()}`,
+    );
     return;
   }
 
-  // 3. 録音開始
-  if (appStateManager.transition("recording")) {
-    floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
+  // 3. 権限チェック（非同期処理）
+  const permissionResult = await checkRecordingPermissions();
+  if (!permissionResult.success) {
+    if (!appStateManager.transition("error", permissionResult.error)) {
+      console.error(
+        `[Shortcut] Failed to transition to error. Current state: ${appStateManager.getState()}`,
+      );
+      appStateManager.forceState("idle");
+    }
+    return;
   }
+
+  // 4. 録音開始を Renderer に通知
+  floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.START_RECORDING);
 }
 
 /**

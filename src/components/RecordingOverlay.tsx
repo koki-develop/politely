@@ -8,6 +8,7 @@ import type { TranscribeResult } from "../types/electron";
 import { ErrorOverlay } from "./overlay/ErrorOverlay";
 // 状態別コンポーネント
 import { IdleOverlay } from "./overlay/IdleOverlay";
+import { PreparingOverlay } from "./overlay/PreparingOverlay";
 import { RecordingStateOverlay } from "./overlay/RecordingStateOverlay";
 import { TranscribingOverlay } from "./overlay/TranscribingOverlay";
 
@@ -115,6 +116,12 @@ export function RecordingOverlay() {
     window.electronAPI.sendRecordingCancelled();
   }, [recorderState, stopRecording]);
 
+  // 準備中のキャンセル
+  const handlePreparingCancel = useCallback(() => {
+    isCancelledRef.current = true;
+    window.electronAPI.sendRecordingCancelled();
+  }, []);
+
   // 文字起こし中のキャンセル
   const handleTranscribingCancel = useCallback(() => {
     isCancelledRef.current = true;
@@ -130,6 +137,9 @@ export function RecordingOverlay() {
   switch (overlayState) {
     case "idle":
       return <IdleOverlay shortcut={globalShortcut} />;
+
+    case "preparing":
+      return <PreparingOverlay onCancel={handlePreparingCancel} />;
 
     case "recording":
       return (

@@ -59,7 +59,7 @@ bun run make
 ### Electron プロセス構成
 
 - **Main Process** (`src/main.ts`): トレイアイコン、グローバルショートカット、IPC ハンドラ
-  - `AppState` 状態マシン（`idle | recording | transcribing | error`）でアプリ状態を管理
+  - `AppState` 状態マシン（`idle | preparing | recording | transcribing | error`）でアプリ状態を管理
 - **Preload Script** (`src/preload.ts`): contextBridge による IPC ブリッジ
 - **Overlay Renderer** (`src/overlay.tsx`): フローティングウィンドウの React エントリーポイント
 - **Transcription Service** (`src/transcription/service.ts`): OpenAI API を使用した文字起こし処理
@@ -117,6 +117,7 @@ src/
 │   ├── overlay/             # 状態別オーバーレイコンポーネント
 │   │   ├── icons.tsx        # アイコン定義（Tabler Icons ラッパー + カスタムアニメーション）
 │   │   ├── IdleOverlay.tsx
+│   │   ├── PreparingOverlay.tsx
 │   │   ├── RecordingStateOverlay.tsx
 │   │   ├── TranscribingOverlay.tsx
 │   │   └── ErrorOverlay.tsx
@@ -175,6 +176,7 @@ src/
 - **Renderer**: `onStateChanged` で状態を購読し、ローカル状態を直接更新しない
 - **状態遷移検証**: `AppStateManager.transition()` で有効な遷移のみ許可
 - **新しい状態遷移の追加**: `src/state/appState.ts` の `VALID_TRANSITIONS` 配列に追加が必要
+- **UIレスポンシブ性**: 重い処理（権限チェック等）の前に状態遷移を行い、UIを即座に更新する。例: `idle → preparing`（即座）→ 権限チェック → `preparing → recording`
 
 ### データフロー
 
@@ -225,7 +227,7 @@ src/
 ### アイコン使用方針
 
 - **@tabler/icons-react を使用**: 新しいアイコンは Tabler Icons から選択
-- **カスタムアニメーション**: `PulseRing`（録音中）、`WaveDots`（処理中）は CSS アニメーション付きのカスタムコンポーネントとして維持
+- **カスタムアニメーション**: `PulseRing`（録音中）、`PulseRingGray`（準備中）、`WaveDots`（処理中）は CSS アニメーション付きのカスタムコンポーネントとして維持
 
 ### UIデザイン方針
 

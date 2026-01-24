@@ -5,7 +5,12 @@
 
 import type { AppError } from "../types/electron";
 
-export type AppState = "idle" | "recording" | "transcribing" | "error";
+export type AppState =
+  | "idle"
+  | "preparing"
+  | "recording"
+  | "transcribing"
+  | "error";
 
 type StateTransition = {
   from: AppState | AppState[];
@@ -14,14 +19,26 @@ type StateTransition = {
 
 // Valid state transitions
 const VALID_TRANSITIONS: StateTransition[] = [
-  { from: "idle", to: "recording" },
+  // idle transitions
+  { from: "idle", to: "preparing" },
   { from: "idle", to: "error" }, // Permission error
+
+  // preparing transitions
+  { from: "preparing", to: "recording" },
+  { from: "preparing", to: "error" },
+  { from: "preparing", to: "idle" }, // Cancel
+
+  // recording transitions
   { from: "recording", to: "transcribing" },
   { from: "recording", to: "idle" }, // Cancel
+
+  // transcribing transitions
   { from: "transcribing", to: "idle" },
   { from: "transcribing", to: "error" },
+
+  // error transitions
   { from: "error", to: "idle" }, // Dismiss
-  { from: "error", to: "recording" }, // Retry
+  { from: "error", to: "preparing" }, // Retry
 ];
 
 /**

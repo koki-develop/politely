@@ -14,6 +14,8 @@ function getWindowSizeForState(
   switch (state) {
     case "idle":
       return WINDOW_SIZES.IDLE;
+    case "preparing":
+      return WINDOW_SIZES.PREPARING;
     case "recording":
       return WINDOW_SIZES.RECORDING;
     case "transcribing":

@@ -25,6 +25,7 @@ export const IPC_INVOKE = {
 
 // Renderer -> Main channels
 export const IPC_RENDERER_TO_MAIN = {
+  RECORDING_STARTED: "recording-started",
   TRANSCRIPTION_COMPLETE: "transcription-complete",
   RECORDING_CANCELLED: "recording-cancelled",
   TRANSCRIBING_CANCELLED: "transcribing-cancelled",

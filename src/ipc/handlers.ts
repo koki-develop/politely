@@ -61,6 +61,16 @@ export function setupRecordingHandlers(
     },
   );
 
+  // 録音開始完了（preparing -> recording）
+  ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_STARTED, () => {
+    console.log("[Main] Recording started");
+    if (!appStateManager.transition("recording")) {
+      console.error(
+        `[Main] Failed to transition to recording. Current state: ${appStateManager.getState()}`,
+      );
+    }
+  });
+
   // 録音キャンセル
   ipcMain.on(IPC_RENDERER_TO_MAIN.RECORDING_CANCELLED, () => {
     console.log("[Main] Recording cancelled");

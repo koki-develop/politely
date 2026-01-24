@@ -21,7 +21,7 @@ export function createTray(
     : path.join(__dirname, "../../assets/trayIconTemplate.png");
 
   tray = new Tray(iconPath);
-  tray.setToolTip("Politely - Voice Input");
+  tray.setToolTip("Politely");
 
   // Set initial menu for idle state
   updateTrayMenu("idle");

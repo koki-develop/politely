@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.4](https://github.com/koki-develop/politely/compare/v0.0.3...v0.0.4) (2026-01-24)
+
+
+### Features
+
+* Release v0.0.4 ([d2c0ea4](https://github.com/koki-develop/politely/commit/d2c0ea43ca68b325a70b9ac7d83f9d528e0dec43))
+
+
+### Bug Fixes
+
+* remove unnecessary active app tracking from paste service ([ce5df08](https://github.com/koki-develop/politely/commit/ce5df089a6cdd9f93e1ae6c813045787c37bd521))
+* replace AppleScript paste with koffi + Core Graphics API ([d291e8d](https://github.com/koki-develop/politely/commit/d291e8d3575662fee9ec3632d432d4cf2269a940))
+
 ## [0.0.3](https://github.com/koki-develop/politely/compare/v0.0.2...v0.0.3) (2026-01-23)
 
 

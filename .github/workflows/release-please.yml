@@ -60,3 +60,38 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag }}
           BUILD_ARCH: ${{ matrix.arch }}
+
+  homebrew-tap:
+    needs:
+      - upload
+      - release-please
+    name: Update Homebrew Tap
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run ./scripts/build-cask.ts "$(jq -r .version < package.json)" --out ./politely.rb
+
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        id: app-token
+        with:
+          app-id: ${{ secrets.HOMEBREW_TAP_APP_ID }}
+          private-key: ${{ secrets.HOMEBREW_TAP_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: homebrew-tap
+          permission-contents: write # for updating files
+      - name: Update Homebrew Cask
+        run: |
+          SHA=$(gh api repos/koki-develop/homebrew-tap/contents/Casks/politely.rb --jq '.sha')
+          gh api --method PUT repos/koki-develop/homebrew-tap/contents/Casks/politely.rb \
+            --field message="chore: update politely to $RELEASE_TAG" \
+            --field content=@<(base64 -i ./politely.rb) \
+            --field sha="$SHA"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag }}

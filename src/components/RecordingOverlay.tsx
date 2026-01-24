@@ -3,7 +3,6 @@ import { ERROR_CODES, ERROR_MESSAGES } from "../errors/codes";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { useOverlayState } from "../hooks/useOverlayState";
 import { useRecordingIpc } from "../hooks/useRecordingIpc";
-import { useWindowSize } from "../hooks/useWindowSize";
 import type { TranscribeResult } from "../types/electron";
 import { ErrorOverlay } from "./overlay/ErrorOverlay";
 // 状態別コンポーネント
@@ -29,9 +28,6 @@ export function RecordingOverlay() {
   } = useAudioRecorder();
 
   const isCancelledRef = useRef(false);
-
-  // ウィンドウサイズの自動調整
-  useWindowSize(overlayState, error?.code ?? null);
 
   // 録音開始/停止の IPC リスナー
   const handleStartRecording = useCallback(() => {

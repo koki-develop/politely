@@ -110,8 +110,7 @@ src/
 ├── hooks/               # カスタムフック
 │   ├── useAudioRecorder.ts  # 音声録音
 │   ├── useOverlayState.ts   # Main Process からの状態同期
-│   ├── useRecordingIpc.ts   # 録音 IPC リスナー
-│   └── useWindowSize.ts     # 状態に応じたウィンドウサイズ管理
+│   └── useRecordingIpc.ts   # 録音 IPC リスナー
 ├── components/          # React コンポーネント
 │   ├── RecordingOverlay.tsx # オーバーレイ親コンポーネント
 │   ├── overlay/             # 状態別オーバーレイコンポーネント
@@ -177,6 +176,7 @@ src/
 - **状態遷移検証**: `AppStateManager.transition()` で有効な遷移のみ許可
 - **新しい状態遷移の追加**: `src/state/appState.ts` の `VALID_TRANSITIONS` 配列に追加が必要
 - **UIレスポンシブ性**: 重い処理（権限チェック等）の前に状態遷移を行い、UIを即座に更新する。例: `idle → preparing`（即座）→ 権限チェック → `preparing → recording`
+- **ウィンドウサイズ管理**: `updateWindowSizeForState()` を `appStateManager.subscribe()` 内で呼び出し、状態遷移と同時にウィンドウサイズを変更する。Renderer 側で IPC を介してサイズ変更すると遅延が発生するため、Main Process で直接処理する
 
 ### データフロー
 

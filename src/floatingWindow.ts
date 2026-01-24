@@ -1,6 +1,8 @@
 import path from "node:path";
 import { BrowserWindow, screen } from "electron";
-import { FLOATING_WINDOW } from "./constants/ui";
+import { FLOATING_WINDOW, WINDOW_SIZES } from "./constants/ui";
+import { type ErrorCode, isPermissionError } from "./errors/codes";
+import type { AppState } from "./state/appState";
 
 let floatingWindow: BrowserWindow | null = null;
 
@@ -105,4 +107,44 @@ export function destroyFloatingWindow(): void {
 
 export function getFloatingWindow(): BrowserWindow | null {
   return floatingWindow;
+}
+
+/**
+ * 状態に応じたウィンドウサイズを取得
+ */
+function getWindowSizeForState(
+  state: AppState,
+  errorCode: ErrorCode | null,
+): { width: number; height: number } {
+  switch (state) {
+    case "idle":
+      return WINDOW_SIZES.IDLE;
+    case "preparing":
+      return WINDOW_SIZES.PREPARING;
+    case "recording":
+      return WINDOW_SIZES.RECORDING;
+    case "transcribing":
+      return WINDOW_SIZES.TRANSCRIBING;
+    case "error": {
+      const hasAction = errorCode ? isPermissionError(errorCode) : false;
+      return hasAction ? WINDOW_SIZES.ERROR_WITH_ACTION : WINDOW_SIZES.ERROR;
+    }
+  }
+}
+
+/**
+ * 状態に応じてウィンドウサイズを更新
+ * Main Process の状態遷移時に同期的に呼び出される
+ */
+export function updateWindowSizeForState(
+  state: AppState,
+  errorCode: ErrorCode | null,
+): void {
+  const size = getWindowSizeForState(state, errorCode);
+
+  if (state === "error") {
+    centerFloatingWindow(size.width, size.height);
+  } else {
+    resizeFloatingWindow(size.width, size.height);
+  }
 }

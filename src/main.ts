@@ -9,6 +9,7 @@ import {
   hideFloatingWindow,
   resizeFloatingWindow,
   showFloatingWindow,
+  updateWindowSizeForState,
 } from "./floatingWindow";
 import {
   registerGlobalShortcut,
@@ -129,8 +130,11 @@ function initializeFloatingWindow() {
   const preloadPath = path.join(__dirname, "preload.js");
   createFloatingWindow(preloadPath);
 
-  // 状態変更時にRendererへブロードキャスト
-  appStateManager.subscribe((state) => {
+  // 状態変更時にウィンドウサイズを更新してRendererへブロードキャスト
+  appStateManager.subscribe((state, error) => {
+    // 状態変更と同時にウィンドウサイズを変更（IPC往復なし）
+    updateWindowSizeForState(state, error?.code ?? null);
+
     broadcastStateChange();
 
     // Idle状態のときの表示制御

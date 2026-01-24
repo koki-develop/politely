@@ -1,5 +1,5 @@
 import path from "node:path";
-import { app, ipcMain, Menu, Tray } from "electron";
+import { app, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
 import {
   centerFloatingWindow,
@@ -32,32 +32,11 @@ import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { createShortcutHandler } from "./shortcut/handler";
 import { appStateManager } from "./state/appState";
 import { initializeOpenAI, resetOpenAI } from "./transcription/service";
+import { createTray, destroyTray, updateTrayMenu } from "./trayMenu";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
-}
-
-let tray: Tray | null = null;
-
-function createTray() {
-  const iconPath = app.isPackaged
-    ? path.join(process.resourcesPath, "assets", "trayIconTemplate.png")
-    : path.join(__dirname, "../../assets/trayIconTemplate.png");
-  tray = new Tray(iconPath);
-  tray.setToolTip("Politely - Voice Input");
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: "Politely", enabled: false },
-      { type: "separator" },
-      {
-        label: "Settings...",
-        click: openSettingsWindow,
-      },
-      { type: "separator" },
-      { label: "Quit", click: () => app.quit() },
-    ]),
-  );
 }
 
 /**
@@ -87,6 +66,8 @@ function openSettingsWindow() {
 export function reregisterGlobalShortcut() {
   const settings = getSettings();
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
+  // ショートカット表示を更新
+  updateTrayMenu(appStateManager.getState());
 }
 
 // ショートカットハンドラの作成
@@ -132,6 +113,9 @@ function initializeFloatingWindow() {
 
   // 状態変更時にウィンドウサイズを更新してRendererへブロードキャスト
   appStateManager.subscribe((state, error) => {
+    // トレイメニューを更新
+    updateTrayMenu(state);
+
     // 状態変更と同時にウィンドウサイズを変更（IPC往復なし）
     updateWindowSizeForState(state, error?.code ?? null);
 
@@ -179,7 +163,7 @@ app.on("ready", async () => {
     initializeOpenAI(settings.apiKey);
   }
 
-  createTray();
+  createTray(openSettingsWindow, handleShortcutPress);
   setupIpcHandlers();
 
   // オンボーディングが完了していない場合はオンボーディングウィンドウを表示
@@ -214,5 +198,6 @@ app.on("before-quit", (event) => {
   destroyFloatingWindow();
   destroySettingsWindow();
   destroyOnboardingWindow();
+  destroyTray();
   app.exit(0);
 });

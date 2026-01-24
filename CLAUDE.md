@@ -314,3 +314,24 @@ src/
     if (source) CFRelease(source);
   }
   ```
+
+### ネイティブモジュールのパッケージング
+
+- **問題**: Vite + Electron Forge で `external` に設定したモジュールは、パッケージング時に `node_modules` にコピーされない（[Issue #3738](https://github.com/electron/forge/issues/3738)）
+- **解決策**: `forge.config.ts` の `packageAfterCopy` hook で手動コピー
+  ```typescript
+  hooks: {
+    packageAfterCopy: async (_config, buildPath) => {
+      const src = path.resolve(__dirname, "node_modules/koffi");
+      const dest = path.join(buildPath, "node_modules/koffi");
+      fs.cpSync(src, dest, { recursive: true });
+    },
+  },
+  ```
+- **asar.unpack が必須**: `.node` ファイルは asar アーカイブ内から実行できないため、ネイティブモジュールは asar から除外する
+  ```typescript
+  asar: {
+    unpack: "**/node_modules/koffi/**",
+  },
+  ```
+- **asar とは**: Electron アプリ用のアーカイブ形式。ファイル数削減・ソースコード隠蔽のメリットがあるが、ネイティブモジュールは除外が必要

@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { MakerDeb } from "@electron-forge/maker-deb";
 import { MakerRpm } from "@electron-forge/maker-rpm";
@@ -9,7 +11,9 @@ import type { ForgeConfig } from "@electron-forge/shared-types";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: true,
+    asar: {
+      unpack: "**/node_modules/koffi/**",
+    },
     icon: "assets/icon",
     extraResource: ["assets"],
     appBundleId: "me.koki.politely",
@@ -19,6 +23,15 @@ const config: ForgeConfig = {
     },
   },
   rebuildConfig: {},
+  hooks: {
+    packageAfterCopy: async (_config, buildPath) => {
+      // Copy koffi module to node_modules in the packaged app
+      // This is needed because Vite external modules are not included by default
+      const src = path.resolve(__dirname, "node_modules/koffi");
+      const dest = path.join(buildPath, "node_modules/koffi");
+      fs.cpSync(src, dest, { recursive: true });
+    },
+  },
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ["darwin"]),
@@ -76,7 +89,7 @@ const config: ForgeConfig = {
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
+      [FuseV1Options.OnlyLoadAppFromAsar]: false,
     }),
   ],
 };

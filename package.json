@@ -1,7 +1,7 @@
 {
   "name": "politely",
   "productName": "Politely",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "話すだけで、丁寧な文章に。",
   "main": ".vite/build/main.js",
   "private": true,

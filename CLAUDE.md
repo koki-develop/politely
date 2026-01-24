@@ -81,6 +81,8 @@ src/
 ├── onboardingWindow.ts  # オンボーディングウィンドウ管理
 ├── globalShortcut.ts    # グローバルショートカット管理
 ├── pasteService.ts      # クリップボード + ペースト処理
+├── native/              # ネイティブモジュール（koffi）
+│   └── keySimulator.ts  # Core Graphics API によるキー入力シミュレーション
 ├── transcription/       # 文字起こし処理
 │   └── service.ts       # OpenAI API を使用した文字起こし + 丁寧語変換
 ├── ipc/                 # IPC 通信
@@ -148,7 +150,7 @@ src/
 - `vite.settings.config.ts` - Settings Renderer 用
 - `vite.onboarding.config.ts` - Onboarding Renderer 用
 
-**注意**: `vite.main.config.ts` と `vite.preload.config.ts` は空の設定（`defineConfig({})`）でOK。Electron Forge の Vite プラグインが Node.js 向けの設定を自動で処理する。
+**注意**: `vite.preload.config.ts` は空の設定（`defineConfig({})`）でOK。Electron Forge の Vite プラグインが Node.js 向けの設定を自動で処理する。ただし `vite.main.config.ts` では koffi などのネイティブモジュールを `build.rollupOptions.external` に追加する必要がある（`.node` ファイルは Vite でバンドルできないため）。
 
 ### 新しい Renderer ウィンドウの追加方法
 
@@ -180,7 +182,7 @@ src/
 2. 再度グローバルショートカット → 録音停止
 3. 音声を IPC 経由で Main Process に送信、Whisper API で文字起こし + GPT で丁寧語変換
 4. 文字起こし結果をクリップボードに書き込み
-5. AppleScript で `Cmd+V` をシミュレート（フローティングウィンドウは `focusable: false` のため、元のアプリがフォアグラウンドのまま）
+5. koffi + Core Graphics API で `Cmd+V` をシミュレート（フローティングウィンドウは `focusable: false` のため、元のアプリがフォアグラウンドのまま）
 
 ### IPC 通信パターン
 
@@ -196,9 +198,10 @@ src/
 
 ### macOS 固有の要件
 
-- **アクセシビリティ権限**: AppleScript でキー入力をシミュレートするために必要
+- **アクセシビリティ権限**: Core Graphics API でキー入力をシミュレートするために必要
 - **マイク権限**: 音声録音に必要
 - Dock アイコンは `app.dock.hide()` で非表示にしている
+- **macOS 専用**: このアプリは macOS 専用のため、`process.platform === "darwin"` チェックは不要
 
 ### macOS 権限チェック
 
@@ -292,5 +295,22 @@ src/
   function destroyWindow() {
     isQuitting = true;
     window.close();
+  }
+  ```
+
+### koffi / ネイティブモジュールの使用
+
+- **配置**: `src/native/` ディレクトリにネイティブバインディングを配置
+- **Core Graphics API**: `CGEventCreateKeyboardEvent`, `CGEventPost` 等でキー入力をシミュレート
+- **メモリ管理**: Core Foundation オブジェクトは `CFRelease()` で解放が必要。try-finally で確実に解放する
+  ```typescript
+  const source = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
+  let keyDown = null;
+  try {
+    keyDown = CGEventCreateKeyboardEvent(source, keyCode, true);
+    // 処理...
+  } finally {
+    if (keyDown) CFRelease(keyDown);
+    if (source) CFRelease(source);
   }
   ```

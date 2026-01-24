@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/koki-develop/politely/compare/v0.1.1...v0.1.2) (2026-01-24)
+
+
+### Bug Fixes
+
+* increase settings window height to 600px ([13e7361](https://github.com/koki-develop/politely/commit/13e7361b5084f3d3773b51956c258da3e1f113e2))
+
 ## [0.1.1](https://github.com/koki-develop/politely/compare/v0.1.0...v0.1.1) (2026-01-24)
 
 

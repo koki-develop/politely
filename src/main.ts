@@ -32,7 +32,7 @@ import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { createShortcutHandler } from "./shortcut/handler";
 import { appStateManager } from "./state/appState";
 import { initializeOpenAI, resetOpenAI } from "./transcription/service";
-import { createTray, destroyTray, updateTrayMenu } from "./trayMenu";
+import { createTray, updateTrayMenu } from "./trayMenu";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -227,6 +227,5 @@ app.on("before-quit", (event) => {
   destroyFloatingWindow();
   destroySettingsWindow();
   destroyOnboardingWindow();
-  destroyTray();
   app.exit(0);
 });

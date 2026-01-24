@@ -98,12 +98,3 @@ function buildMenuTemplate(
     { label: "Quit", accelerator: "Command+Q", click: () => app.quit() },
   ];
 }
-
-export function destroyTray(): void {
-  if (tray) {
-    tray.destroy();
-    tray = null;
-  }
-  openSettingsWindowFn = null;
-  handleShortcutPressFn = null;
-}

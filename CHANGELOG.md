@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/koki-develop/politely/compare/v0.0.6...v0.0.7) (2026-01-24)
+
+
+### Bug Fixes
+
+* disable cookie encryption to prevent keychain access prompt ([6144f95](https://github.com/koki-develop/politely/commit/6144f955cd35746a89263affd29bff1d916a256a))
+
 ## [0.0.6](https://github.com/koki-develop/politely/compare/v0.0.5...v0.0.6) (2026-01-24)
 
 

@@ -26,6 +26,10 @@ const schema = {
     type: "boolean" as const,
     default: DEFAULT_SETTINGS.showWindowOnIdle,
   },
+  showDockIcon: {
+    type: "boolean" as const,
+    default: DEFAULT_SETTINGS.showDockIcon,
+  },
   globalShortcut: {
     type: "string" as const,
     default: DEFAULT_SETTINGS.globalShortcut,
@@ -55,6 +59,7 @@ export function getSettings(): AppSettings {
     gptModel: s.get("gptModel"),
     politenessLevel: s.get("politenessLevel"),
     showWindowOnIdle: s.get("showWindowOnIdle"),
+    showDockIcon: s.get("showDockIcon"),
     globalShortcut: s.get("globalShortcut"),
   };
 
@@ -100,6 +105,9 @@ export function updateSettings(
   }
   if (validated.showWindowOnIdle !== undefined) {
     s.set("showWindowOnIdle", validated.showWindowOnIdle);
+  }
+  if (validated.showDockIcon !== undefined) {
+    s.set("showDockIcon", validated.showDockIcon);
   }
   if (validated.globalShortcut !== undefined) {
     s.set("globalShortcut", validated.globalShortcut);

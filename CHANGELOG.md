@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/koki-develop/politely/compare/v0.0.4...v0.0.5) (2026-01-24)
+
+
+### Bug Fixes
+
+* use release tag for Homebrew cask version in release workflow ([b1f99df](https://github.com/koki-develop/politely/commit/b1f99df88cf1fe4fe7e9e026914554189c070530))
+
 ## [0.0.4](https://github.com/koki-develop/politely/compare/v0.0.3...v0.0.4) (2026-01-24)
 
 

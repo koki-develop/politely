@@ -49,31 +49,18 @@ body,
   animation-delay: 0.2s;
 }
 
-/* 文字起こし中のウェーブドット */
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
+/* 文字起こし中のスピナーリング */
+@keyframes spin-progress {
+  from {
+    transform: rotate(0deg);
   }
-
-  30% {
-    transform: translateY(-4px);
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.animate-wave {
-  animation: wave 1.2s ease-in-out infinite;
-}
-
-.animate-wave-delay-1 {
-  animation: wave 1.2s ease-in-out infinite;
-  animation-delay: 0.1s;
-}
-
-.animate-wave-delay-2 {
-  animation: wave 1.2s ease-in-out infinite;
-  animation-delay: 0.2s;
+.animate-spin-progress {
+  animation: spin-progress 1.2s linear infinite;
 }
 
 /* フェードイン */

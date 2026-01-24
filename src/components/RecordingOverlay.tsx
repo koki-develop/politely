@@ -54,8 +54,9 @@ export function RecordingOverlay() {
         await window.electronAPI.transcribe(arrayBuffer);
 
       if (result.success === true) {
-        if (result.text) {
-          window.electronAPI.sendTranscriptionComplete(result.text);
+        const trimmedText = result.text.trim();
+        if (trimmedText) {
+          window.electronAPI.sendTranscriptionComplete(trimmedText);
         } else {
           window.electronAPI.sendRecordingError({
             code: ERROR_CODES.NO_SPEECH_DETECTED,

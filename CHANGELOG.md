@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.0](https://github.com/koki-develop/politely/compare/v0.0.7...v0.1.0) (2026-01-24)
+
+
+### Features
+
+* add dock icon visibility setting ([#10](https://github.com/koki-develop/politely/issues/10)) ([0ee6c15](https://github.com/koki-develop/politely/commit/0ee6c15df5109a06e7efc8b781710f90400c799e))
+* add dynamic tray menu with state-aware recording controls ([#12](https://github.com/koki-develop/politely/issues/12)) ([9d893d7](https://github.com/koki-develop/politely/commit/9d893d7c4a091711b4a78cd7372d2142b1b63b2a))
+* add preparing state for responsive UI during recording initialization ([a1511f4](https://github.com/koki-develop/politely/commit/a1511f434f01600739881ae45f0452c0dc653b13))
+* display version in tray menu title ([bbe06da](https://github.com/koki-develop/politely/commit/bbe06daac751963598e4075b02283e9204108784))
+
+
+### Bug Fixes
+
+* correct polite text field name and update prompt instructions ([d6b951c](https://github.com/koki-develop/politely/commit/d6b951c6d86cd6f9542e90be7b2de93fb5039319))
+* eliminate window resize delay by moving size logic to Main Process ([3bf304d](https://github.com/koki-develop/politely/commit/3bf304d41a8a0ca8e663bdc13fec6cbef0391b8d))
+* improve transcribing overlay design with spinner ring animation ([#11](https://github.com/koki-develop/politely/issues/11)) ([e9a0b12](https://github.com/koki-develop/politely/commit/e9a0b12474c8ce050ec942a62816ae567841ea2e))
+* remove destroyTray to preserve tray icon position on macOS ([2e18eb5](https://github.com/koki-develop/politely/commit/2e18eb5406a011699107984307f6a20364e8d878))
+* simplify tray tooltip text ([083dc88](https://github.com/koki-develop/politely/commit/083dc88e787f26eb19454b2a02a98588c103cd5f))
+* suppress error display when user cancels transcription ([#9](https://github.com/koki-develop/politely/issues/9)) ([6cbd47a](https://github.com/koki-develop/politely/commit/6cbd47a6070aaf266f05052a7dc4f992294dba69))
+* trim transcription text before empty check ([5872c5c](https://github.com/koki-develop/politely/commit/5872c5cf9c3eaf101a0d5c3d9e8c9dd718b0b7f6))
+
 ## [0.0.7](https://github.com/koki-develop/politely/compare/v0.0.6...v0.0.7) (2026-01-24)
 
 

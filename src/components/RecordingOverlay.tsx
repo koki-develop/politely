@@ -64,6 +64,10 @@ export function RecordingOverlay() {
           });
         }
       } else {
+        // キャンセル操作の場合はエラー通知せず静かに終了
+        if (isCancelledRef.current) {
+          return;
+        }
         if (result.errorCode === ERROR_CODES.API_KEY_NOT_CONFIGURED) {
           window.electronAPI.openSettings();
         }

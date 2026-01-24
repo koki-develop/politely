@@ -80,20 +80,19 @@ function buildMenuTemplate(
   const settingsEnabled = canOperate;
 
   return [
-    { label: "Politely", enabled: false },
+    { label: `Politely v${app.getVersion()}`, enabled: false },
+    {
+      label: "Settings...",
+      accelerator: "Command+,",
+      enabled: settingsEnabled,
+      click: () => openSettingsWindowFn?.(),
+    },
     { type: "separator" },
     {
       label: recordingLabel,
       accelerator,
       enabled: recordingEnabled,
       click: recordingClick,
-    },
-    { type: "separator" },
-    {
-      label: "Settings...",
-      accelerator: "Command+,",
-      enabled: settingsEnabled,
-      click: () => openSettingsWindowFn?.(),
     },
     { type: "separator" },
     { label: "Quit", accelerator: "Command+Q", click: () => app.quit() },

@@ -106,6 +106,18 @@ export const SettingsApp = () => {
     }
   }, []);
 
+  const handleShowDockIconChange = useCallback(async (checked: boolean) => {
+    setAppearanceError(null);
+    const result = await window.settingsAPI.updateSettings({
+      showDockIcon: checked,
+    });
+    if (result.success) {
+      setSettings(result.settings);
+    } else {
+      setAppearanceError(result.error);
+    }
+  }, []);
+
   const handleShortcutChange = useCallback(async (shortcut: string) => {
     setShortcutError(null);
     const result = await window.settingsAPI.updateSettings({
@@ -233,6 +245,14 @@ export const SettingsApp = () => {
               description="録音していない時にフローティングウィンドウを表示します"
               checked={settings.showWindowOnIdle}
               onChange={handleShowWindowOnIdleChange}
+            />
+          </div>
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <ToggleSwitch
+              label="Dock にアイコンを表示"
+              description="Dock にアプリケーションアイコンを表示します"
+              checked={settings.showDockIcon}
+              onChange={handleShowDockIconChange}
             />
           </div>
           {appearanceError && (

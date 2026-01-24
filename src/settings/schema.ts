@@ -49,6 +49,7 @@ export const AppSettingsSchema = z.object({
   gptModel: GptModelSchema,
   politenessLevel: PolitenessLevelSchema,
   showWindowOnIdle: z.boolean(),
+  showDockIcon: z.boolean(),
   globalShortcut: z.string(),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -60,6 +61,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   gptModel: "gpt-4.1-mini",
   politenessLevel: "medium",
   showWindowOnIdle: true,
+  showDockIcon: true,
   globalShortcut: DEFAULT_SHORTCUT,
 };
 

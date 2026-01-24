@@ -20,6 +20,7 @@ const config: ForgeConfig = {
     extendInfo: {
       NSMicrophoneUsageDescription:
         "Politely は音声入力のためにマイクを使用します。",
+      LSUIElement: true,
     },
   },
   rebuildConfig: {},

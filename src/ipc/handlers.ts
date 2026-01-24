@@ -136,6 +136,9 @@ export function setupSettingsHandlers(
   hideFloatingWindow: () => void,
   initializeOpenAI: (apiKey: string) => void,
   resetOpenAI: () => void,
+  setDockVisibility: (
+    visible: boolean,
+  ) => Promise<{ success: boolean; error?: string }>,
 ): void {
   // 設定画面を開く
   ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS, openSettingsWindow);
@@ -148,10 +151,10 @@ export function setupSettingsHandlers(
   // 設定更新
   ipcMain.handle(
     IPC_INVOKE.UPDATE_SETTINGS,
-    (
+    async (
       _event: IpcMainInvokeEvent,
       newSettings: Partial<AppSettings>,
-    ): UpdateSettingsResult => {
+    ): Promise<UpdateSettingsResult> => {
       const oldSettings = getSettings();
 
       // ショートカット変更時は先に登録を試みる（オンボーディング中は登録しない）
@@ -208,6 +211,22 @@ export function setupSettingsHandlers(
           } else {
             hideFloatingWindow();
           }
+        }
+      }
+
+      // showDockIcon 変更時の処理
+      if (
+        "showDockIcon" in newSettings &&
+        newSettings.showDockIcon !== undefined &&
+        newSettings.showDockIcon !== oldSettings.showDockIcon
+      ) {
+        const dockResult = await setDockVisibility(newSettings.showDockIcon);
+        if (!dockResult.success) {
+          return {
+            success: false,
+            error: dockResult.error ?? "Dock の表示切替に失敗しました",
+            settings: oldSettings,
+          };
         }
       }
 

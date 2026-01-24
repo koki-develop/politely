@@ -97,6 +97,28 @@ const handleShortcutPress = createShortcutHandler(
 );
 
 /**
+ * Dock アイコンの表示/非表示を切り替える
+ */
+async function setDockVisibility(
+  visible: boolean,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (visible) {
+      await app.dock?.show();
+    } else {
+      app.dock?.hide();
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("[Main] Failed to change dock visibility:", error);
+    return {
+      success: false,
+      error: "Dock アイコンの表示切替に失敗しました",
+    };
+  }
+}
+
+/**
  * IPC ハンドラのセットアップ
  */
 function setupIpcHandlers() {
@@ -116,6 +138,7 @@ function setupIpcHandlers() {
     hideFloatingWindow,
     initializeOpenAI,
     resetOpenAI,
+    setDockVisibility,
   );
 
   setupPermissionsHandlers(ipcMain);
@@ -168,13 +191,19 @@ function initializeFloatingWindow() {
 }
 
 app.on("ready", async () => {
-  // macOS: Dock アイコンを隠す
-  if (process.platform === "darwin") {
-    app.dock?.hide();
-  }
-
   // 保存済みAPIキーでOpenAIクライアントを初期化
   const settings = getSettings();
+
+  // macOS: 設定に基づいて Dock アイコンを表示
+  // LSUIElement: true により起動時はデフォルトで Dock 非表示
+  if (settings.showDockIcon) {
+    try {
+      await app.dock?.show();
+      console.log("[Main] Dock icon shown based on settings");
+    } catch (error) {
+      console.error("[Main] Failed to show dock icon on startup:", error);
+    }
+  }
   if (settings.apiKey) {
     initializeOpenAI(settings.apiKey);
   }

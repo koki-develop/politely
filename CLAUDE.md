@@ -59,7 +59,7 @@ bun run make
 ### Electron プロセス構成
 
 - **Main Process** (`src/main.ts`): トレイアイコン、グローバルショートカット、IPC ハンドラ
-  - `AppState` 状態マシン（`idle | preparing | recording | transcribing | error`）でアプリ状態を管理
+  - `AppState` 状態マシン（`idle | preparing | recording | transcribing | converting | error`）でアプリ状態を管理
 - **Preload Script** (`src/preload.ts`): contextBridge による IPC ブリッジ
 - **Overlay Renderer** (`src/overlay.tsx`): フローティングウィンドウの React エントリーポイント
 - **Transcription Service** (`src/transcription/service.ts`): OpenAI API を使用した文字起こし処理
@@ -120,6 +120,7 @@ src/
 │   │   ├── PreparingOverlay.tsx
 │   │   ├── RecordingStateOverlay.tsx
 │   │   ├── TranscribingOverlay.tsx
+│   │   ├── ConvertingOverlay.tsx
 │   │   └── ErrorOverlay.tsx
 │   ├── SettingsApp.tsx
 │   ├── ModelSelector.tsx

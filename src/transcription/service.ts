@@ -5,7 +5,10 @@ import { z } from "zod";
 import { ERROR_CODES } from "../errors/codes";
 import type { PolitenessLevel } from "../settings/schema";
 import { getSettings } from "../settings/store";
-import type { TranscribeResult } from "../types/electron";
+import type {
+  ConvertToPoliteResult,
+  TranscribeAudioResult,
+} from "../types/electron";
 
 let openaiClient: OpenAI | null = null;
 let currentAbortController: AbortController | null = null;
@@ -182,7 +185,7 @@ const POLITENESS_BASE_MESSAGES: Record<
   ],
 };
 
-const convertToPolite = async (
+const convertToPoliteInternal = async (
   text: string,
   signal?: AbortSignal,
 ): Promise<string> => {
@@ -217,9 +220,14 @@ const convertToPolite = async (
   return message.parsed.politeText;
 };
 
-export async function transcribe(
+/**
+ * 音声データを文字起こし（Whisper API）
+ * 成功時は currentAbortController を維持（convertToPolite で使用）
+ * エラー時はリセット
+ */
+export async function transcribeAudio(
   audioData: ArrayBuffer,
-): Promise<TranscribeResult> {
+): Promise<TranscribeAudioResult> {
   currentAbortController = new AbortController();
   const signal = currentAbortController.signal;
 
@@ -230,7 +238,6 @@ export async function transcribe(
     const buffer = Buffer.from(audioData);
     const file = new File([buffer], "recording.webm", { type: "audio/webm" });
 
-    // 1. 音声文字起こし
     const transcription = await openai.audio.transcriptions.create(
       {
         file,
@@ -239,14 +246,14 @@ export async function transcribe(
       },
       { signal },
     );
-    console.log("[Transcribe] Original:", transcription.text);
+    console.log("[TranscribeAudio] Result:", transcription.text);
 
-    // 2. 丁寧語に変換
-    const politeText = await convertToPolite(transcription.text, signal);
-
-    return { success: true, text: politeText };
+    // 成功時は currentAbortController を維持（convertToPolite で使用）
+    return { success: true, text: transcription.text };
   } catch (error) {
-    console.error("[Transcribe Error]", error);
+    console.error("[TranscribeAudio Error]", error);
+    // エラー時はリセット
+    currentAbortController = null;
 
     if (error instanceof Error && error.name === "AbortError") {
       return {
@@ -276,6 +283,50 @@ export async function transcribe(
       success: false,
       error: "Transcription failed",
       errorCode: ERROR_CODES.TRANSCRIPTION_FAILED,
+    };
+  }
+}
+
+/**
+ * テキストを丁寧語に変換（GPT API）
+ */
+export async function convertToPolite(
+  text: string,
+): Promise<ConvertToPoliteResult> {
+  // AbortController を再利用（transcribeAudio で作成済みの場合）
+  if (!currentAbortController) {
+    currentAbortController = new AbortController();
+  }
+  const signal = currentAbortController.signal;
+
+  try {
+    const politeText = await convertToPoliteInternal(text, signal);
+    console.log("[ConvertToPolite] Result:", politeText);
+
+    return { success: true, text: politeText };
+  } catch (error) {
+    console.error("[ConvertToPolite Error]", error);
+
+    if (error instanceof Error && error.name === "AbortError") {
+      return {
+        success: false,
+        error: "Conversion cancelled",
+        errorCode: ERROR_CODES.TRANSCRIPTION_CANCELLED,
+      };
+    }
+
+    if (error instanceof OpenAI.APIError) {
+      return {
+        success: false,
+        error: `OpenAI API Error: ${error.message}`,
+        errorCode: ERROR_CODES.CONVERSION_FAILED,
+      };
+    }
+
+    return {
+      success: false,
+      error: "Conversion failed",
+      errorCode: ERROR_CODES.CONVERSION_FAILED,
     };
   } finally {
     currentAbortController = null;

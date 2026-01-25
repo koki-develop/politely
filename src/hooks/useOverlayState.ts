@@ -10,6 +10,7 @@ import type { AppError, StateChangePayload } from "../types/electron";
 type OverlayStateHook = {
   state: AppState;
   error: AppError | null;
+  rawText: string | null;
   globalShortcut: string;
 };
 
@@ -20,6 +21,7 @@ type OverlayStateHook = {
 export function useOverlayState(): OverlayStateHook {
   const [state, setState] = useState<AppState>("idle");
   const [error, setError] = useState<AppError | null>(null);
+  const [rawText, setRawText] = useState<string | null>(null);
   const [globalShortcut, setGlobalShortcut] = useState<string>(
     DEFAULT_SETTINGS.globalShortcut,
   );
@@ -28,6 +30,7 @@ export function useOverlayState(): OverlayStateHook {
     const handleStateChange = (payload: StateChangePayload) => {
       setState(payload.state);
       setError(payload.error);
+      setRawText(payload.rawText ?? null);
       // ショートカット情報が含まれていれば更新
       if (payload.globalShortcut) {
         setGlobalShortcut(payload.globalShortcut);
@@ -41,5 +44,5 @@ export function useOverlayState(): OverlayStateHook {
     };
   }, []);
 
-  return { state, error, globalShortcut };
+  return { state, error, rawText, globalShortcut };
 }

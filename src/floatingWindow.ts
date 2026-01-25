@@ -125,6 +125,8 @@ function getWindowSizeForState(
       return WINDOW_SIZES.RECORDING;
     case "transcribing":
       return WINDOW_SIZES.TRANSCRIBING;
+    case "converting":
+      return WINDOW_SIZES.CONVERTING;
     case "error": {
       const hasAction = errorCode ? isPermissionError(errorCode) : false;
       return hasAction ? WINDOW_SIZES.ERROR_WITH_ACTION : WINDOW_SIZES.ERROR;

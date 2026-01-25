@@ -10,8 +10,9 @@ import {
 } from "./ipc/channels";
 import type {
   AppError,
+  ConvertToPoliteResult,
   StateChangePayload,
-  TranscribeResult,
+  TranscribeAudioResult,
 } from "./types/electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
@@ -35,11 +36,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
   sendTranscriptionComplete: (text: string) => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.TRANSCRIPTION_COMPLETE, text);
   },
+  sendTranscriptionProgress: (rawText: string) => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.TRANSCRIPTION_PROGRESS, rawText);
+  },
   sendRecordingCancelled: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.RECORDING_CANCELLED);
   },
   sendTranscribingCancelled: () => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.TRANSCRIBING_CANCELLED);
+  },
+  sendConvertingCancelled: () => {
+    ipcRenderer.send(IPC_RENDERER_TO_MAIN.CONVERTING_CANCELLED);
   },
   sendRecordingError: (error: AppError) => {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.RECORDING_ERROR, error);
@@ -63,8 +70,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS);
   },
 
-  transcribe: (audioData: ArrayBuffer): Promise<TranscribeResult> => {
-    return ipcRenderer.invoke(IPC_INVOKE.TRANSCRIBE, audioData);
+  transcribeAudio: (audioData: ArrayBuffer): Promise<TranscribeAudioResult> => {
+    return ipcRenderer.invoke(IPC_INVOKE.TRANSCRIBE_AUDIO, audioData);
+  },
+  convertToPolite: (text: string): Promise<ConvertToPoliteResult> => {
+    return ipcRenderer.invoke(IPC_INVOKE.CONVERT_TO_POLITE, text);
   },
 
   removeAllListeners: (channel: MainToRendererChannel) => {

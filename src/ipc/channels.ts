@@ -11,7 +11,8 @@ export const IPC_MAIN_TO_RENDERER = {
 
 // Invoke channels (Renderer -> Main with response)
 export const IPC_INVOKE = {
-  TRANSCRIBE: "transcribe",
+  TRANSCRIBE_AUDIO: "transcribe-audio",
+  CONVERT_TO_POLITE: "convert-to-polite",
   CHECK_PERMISSIONS: "check-permissions",
   REQUEST_MICROPHONE_PERMISSION: "request-microphone-permission",
   REQUEST_ACCESSIBILITY_PERMISSION: "request-accessibility-permission",
@@ -27,8 +28,10 @@ export const IPC_INVOKE = {
 export const IPC_RENDERER_TO_MAIN = {
   RECORDING_STARTED: "recording-started",
   TRANSCRIPTION_COMPLETE: "transcription-complete",
+  TRANSCRIPTION_PROGRESS: "transcription-progress",
   RECORDING_CANCELLED: "recording-cancelled",
   TRANSCRIBING_CANCELLED: "transcribing-cancelled",
+  CONVERTING_CANCELLED: "converting-cancelled",
   RECORDING_ERROR: "recording-error",
   ERROR_DISMISSED: "error-dismissed",
   SET_WINDOW_SIZE: "set-window-size",

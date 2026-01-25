@@ -6,6 +6,7 @@ export const WINDOW_SIZES = {
   PREPARING: { width: 130, height: 56 },
   RECORDING: { width: 130, height: 56 },
   TRANSCRIBING: { width: 130, height: 56 },
+  CONVERTING: { width: 280, height: 56 },
   ERROR: { width: 280, height: 100 },
   ERROR_WITH_ACTION: { width: 280, height: 120 },
 } as const;

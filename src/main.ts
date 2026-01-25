@@ -50,6 +50,7 @@ function broadcastStateChange() {
   floatingWindow.webContents.send(IPC_MAIN_TO_RENDERER.STATE_CHANGED, {
     state: appStateManager.getState(),
     error: appStateManager.getError(),
+    rawText: appStateManager.getRawText(),
     globalShortcut: settings.globalShortcut,
   });
 }

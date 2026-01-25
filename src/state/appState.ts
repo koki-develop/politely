@@ -10,6 +10,7 @@ export type AppState =
   | "preparing"
   | "recording"
   | "transcribing"
+  | "converting"
   | "error";
 
 type StateTransition = {
@@ -33,8 +34,13 @@ const VALID_TRANSITIONS: StateTransition[] = [
   { from: "recording", to: "idle" }, // Cancel
 
   // transcribing transitions
+  { from: "transcribing", to: "converting" },
   { from: "transcribing", to: "idle" },
   { from: "transcribing", to: "error" },
+
+  // converting transitions
+  { from: "converting", to: "idle" },
+  { from: "converting", to: "error" },
 
   // error transitions
   { from: "error", to: "idle" }, // Dismiss
@@ -42,13 +48,18 @@ const VALID_TRANSITIONS: StateTransition[] = [
 ];
 
 /**
- * 状態変更リスナーの型（AppError に対応）
+ * 状態変更リスナーの型（AppError と rawText に対応）
  */
-type StateChangeListener = (state: AppState, error?: AppError | null) => void;
+type StateChangeListener = (
+  state: AppState,
+  error?: AppError | null,
+  rawText?: string | null,
+) => void;
 
 export class AppStateManager {
   private state: AppState = "idle";
   private error: AppError | null = null;
+  private rawText: string | null = null;
   private listeners: Set<StateChangeListener> = new Set();
 
   getState(): AppState {
@@ -59,13 +70,18 @@ export class AppStateManager {
     return this.error;
   }
 
+  getRawText(): string | null {
+    return this.rawText;
+  }
+
   /**
-   * 状態遷移
-   * @param to 遷移先の状態
-   * @param error エラー情報（AppError オブジェクト）
-   * @returns 遷移が成功した場合は true
+   * 状態遷移（オーバーロード）
+   * 状態ごとに適切なパラメータ型を強制
    */
-  transition(to: AppState, error?: AppError | null): boolean {
+  transition(to: "error", error: AppError): boolean;
+  transition(to: "converting", rawText: string): boolean;
+  transition(to: Exclude<AppState, "error" | "converting">): boolean;
+  transition(to: AppState, data?: AppError | string): boolean {
     const isValid = VALID_TRANSITIONS.some((t) => {
       const fromMatch = Array.isArray(t.from)
         ? t.from.includes(this.state)
@@ -80,7 +96,19 @@ export class AppStateManager {
 
     console.log(`[AppState] Transition: ${this.state} -> ${to}`);
     this.state = to;
-    this.error = to === "error" ? (error ?? null) : null;
+
+    // 状態に応じてデータを保存
+    if (to === "converting" && typeof data === "string") {
+      this.rawText = data;
+      this.error = null;
+    } else if (to === "error" && typeof data === "object" && data !== null) {
+      this.error = data;
+      this.rawText = null;
+    } else {
+      this.error = null;
+      this.rawText = null;
+    }
+
     this.notifyListeners();
     return true;
   }
@@ -93,6 +121,7 @@ export class AppStateManager {
     console.log(`[AppState] Force set: ${this.state} -> ${state}`);
     this.state = state;
     this.error = state === "error" ? (error ?? null) : null;
+    this.rawText = null;
     this.notifyListeners();
   }
 
@@ -107,7 +136,7 @@ export class AppStateManager {
 
   private notifyListeners(): void {
     for (const listener of this.listeners) {
-      listener(this.state, this.error);
+      listener(this.state, this.error, this.rawText);
     }
   }
 }

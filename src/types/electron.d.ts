@@ -12,16 +12,31 @@ export type AppError = {
 export type StateChangePayload = {
   state: AppState;
   error: AppError | null;
+  rawText?: string | null;
   globalShortcut?: string;
 };
 
-type TranscribeSuccessResult = { success: true; text: string };
-type TranscribeErrorResult = {
+// 音声文字起こしの結果型
+type TranscribeAudioSuccessResult = { success: true; text: string };
+type TranscribeAudioErrorResult = {
   success: false;
   error: string;
   errorCode: ErrorCode;
 };
-export type TranscribeResult = TranscribeSuccessResult | TranscribeErrorResult;
+export type TranscribeAudioResult =
+  | TranscribeAudioSuccessResult
+  | TranscribeAudioErrorResult;
+
+// 丁寧語変換の結果型
+type ConvertToPoliteSuccessResult = { success: true; text: string };
+type ConvertToPoliteErrorResult = {
+  success: false;
+  error: string;
+  errorCode: ErrorCode;
+};
+export type ConvertToPoliteResult =
+  | ConvertToPoliteSuccessResult
+  | ConvertToPoliteErrorResult;
 
 export interface ElectronAPI {
   // Main -> Renderer listeners
@@ -32,8 +47,10 @@ export interface ElectronAPI {
   // Renderer -> Main senders
   sendRecordingStarted: () => void;
   sendTranscriptionComplete: (text: string) => void;
+  sendTranscriptionProgress: (rawText: string) => void;
   sendRecordingCancelled: () => void;
   sendTranscribingCancelled: () => void;
+  sendConvertingCancelled: () => void;
   sendRecordingError: (error: AppError) => void;
   sendErrorDismissed: () => void;
   setWindowSize: (width: number, height: number) => void;
@@ -43,7 +60,8 @@ export interface ElectronAPI {
   openMicrophoneSettings: () => void;
 
   // Invoke (async with response)
-  transcribe: (audioData: ArrayBuffer) => Promise<TranscribeResult>;
+  transcribeAudio: (audioData: ArrayBuffer) => Promise<TranscribeAudioResult>;
+  convertToPolite: (text: string) => Promise<ConvertToPoliteResult>;
 
   // Cleanup
   removeAllListeners: (channel: MainToRendererChannel) => void;

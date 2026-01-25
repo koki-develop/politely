@@ -21,7 +21,11 @@ import {
 import type { AppSettings, OnboardingState } from "../settings/schema";
 import { getSettings, updateSettings } from "../settings/store";
 import type { AppStateManager } from "../state/appState";
-import { abortTranscription, transcribe } from "../transcription/service";
+import {
+  abortTranscription,
+  convertToPolite,
+  transcribeAudio,
+} from "../transcription/service";
 import type { AppError, UpdateSettingsResult } from "../types/electron";
 import { IPC_INVOKE, IPC_RENDERER_TO_MAIN } from "./channels";
 
@@ -84,6 +88,22 @@ export function setupRecordingHandlers(
     appStateManager.transition("idle");
   });
 
+  // 文字起こし進捗（Whisper 完了、GPT 変換開始）
+  ipcMain.on(
+    IPC_RENDERER_TO_MAIN.TRANSCRIPTION_PROGRESS,
+    (_event: IpcMainEvent, rawText: string) => {
+      console.log("[Main] Transcription progress:", rawText);
+      appStateManager.transition("converting", rawText);
+    },
+  );
+
+  // 丁寧語変換キャンセル
+  ipcMain.on(IPC_RENDERER_TO_MAIN.CONVERTING_CANCELLED, () => {
+    console.log("[Main] Converting cancelled");
+    abortTranscription();
+    appStateManager.transition("idle");
+  });
+
   // 録音エラー
   ipcMain.on(
     IPC_RENDERER_TO_MAIN.RECORDING_ERROR,
@@ -115,11 +135,19 @@ export function setupRecordingHandlers(
     },
   );
 
-  // 文字起こし invoke
+  // 音声文字起こし invoke（Whisper API のみ）
   ipcMain.handle(
-    IPC_INVOKE.TRANSCRIBE,
+    IPC_INVOKE.TRANSCRIBE_AUDIO,
     async (_event: IpcMainInvokeEvent, audioData: ArrayBuffer) => {
-      return await transcribe(audioData);
+      return await transcribeAudio(audioData);
+    },
+  );
+
+  // 丁寧語変換 invoke（GPT API のみ）
+  ipcMain.handle(
+    IPC_INVOKE.CONVERT_TO_POLITE,
+    async (_event: IpcMainInvokeEvent, text: string) => {
+      return await convertToPolite(text);
     },
   );
 }

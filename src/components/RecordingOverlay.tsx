@@ -3,7 +3,11 @@ import { ERROR_CODES, ERROR_MESSAGES } from "../errors/codes";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { useOverlayState } from "../hooks/useOverlayState";
 import { useRecordingIpc } from "../hooks/useRecordingIpc";
-import type { TranscribeResult } from "../types/electron";
+import type {
+  ConvertToPoliteResult,
+  TranscribeAudioResult,
+} from "../types/electron";
+import { ConvertingOverlay } from "./overlay/ConvertingOverlay";
 import { ErrorOverlay } from "./overlay/ErrorOverlay";
 // 状態別コンポーネント
 import { IdleOverlay } from "./overlay/IdleOverlay";
@@ -17,7 +21,12 @@ import { TranscribingOverlay } from "./overlay/TranscribingOverlay";
  */
 export function RecordingOverlay() {
   // 状態管理
-  const { state: overlayState, error, globalShortcut } = useOverlayState();
+  const {
+    state: overlayState,
+    error,
+    rawText,
+    globalShortcut,
+  } = useOverlayState();
   const {
     state: recorderState,
     error: recordError,
@@ -46,34 +55,65 @@ export function RecordingOverlay() {
     onStopRecording: handleStopRecording,
   });
 
-  // 文字起こし実行
+  // 文字起こし実行（2段階処理）
   const transcribe = useCallback(async (blob: Blob) => {
     try {
       const arrayBuffer = await blob.arrayBuffer();
-      const result: TranscribeResult =
-        await window.electronAPI.transcribe(arrayBuffer);
 
-      if (result.success === true) {
-        const trimmedText = result.text.trim();
-        if (trimmedText) {
-          window.electronAPI.sendTranscriptionComplete(trimmedText);
-        } else {
-          window.electronAPI.sendRecordingError({
-            code: ERROR_CODES.NO_SPEECH_DETECTED,
-            message: ERROR_MESSAGES[ERROR_CODES.NO_SPEECH_DETECTED],
-          });
-        }
-      } else {
+      // 1. 音声文字起こし（Whisper API）
+      const transcribeResult: TranscribeAudioResult =
+        await window.electronAPI.transcribeAudio(arrayBuffer);
+
+      if (transcribeResult.success !== true) {
         // キャンセル操作の場合はエラー通知せず静かに終了
         if (isCancelledRef.current) {
           return;
         }
-        if (result.errorCode === ERROR_CODES.API_KEY_NOT_CONFIGURED) {
+        if (transcribeResult.errorCode === ERROR_CODES.API_KEY_NOT_CONFIGURED) {
           window.electronAPI.openSettings();
         }
         window.electronAPI.sendRecordingError({
-          code: result.errorCode,
-          message: result.error,
+          code: transcribeResult.errorCode,
+          message: transcribeResult.error,
+        });
+        return;
+      }
+
+      const rawText = transcribeResult.text.trim();
+      if (!rawText) {
+        window.electronAPI.sendRecordingError({
+          code: ERROR_CODES.NO_SPEECH_DETECTED,
+          message: ERROR_MESSAGES[ERROR_CODES.NO_SPEECH_DETECTED],
+        });
+        return;
+      }
+
+      // 状態を converting に遷移（生テキストを通知）
+      window.electronAPI.sendTranscriptionProgress(rawText);
+
+      // 2. 丁寧語変換（GPT API）
+      const convertResult: ConvertToPoliteResult =
+        await window.electronAPI.convertToPolite(rawText);
+
+      if (convertResult.success !== true) {
+        // キャンセル操作の場合はエラー通知せず静かに終了
+        if (isCancelledRef.current) {
+          return;
+        }
+        window.electronAPI.sendRecordingError({
+          code: convertResult.errorCode,
+          message: convertResult.error,
+        });
+        return;
+      }
+
+      const politeText = convertResult.text.trim();
+      if (politeText) {
+        window.electronAPI.sendTranscriptionComplete(politeText);
+      } else {
+        window.electronAPI.sendRecordingError({
+          code: ERROR_CODES.TRANSCRIPTION_FAILED,
+          message: "変換結果が空です",
         });
       }
     } catch (err) {
@@ -129,6 +169,12 @@ export function RecordingOverlay() {
     window.electronAPI.sendTranscribingCancelled();
   }, []);
 
+  // 丁寧語変換中のキャンセル
+  const handleConvertingCancel = useCallback(() => {
+    isCancelledRef.current = true;
+    window.electronAPI.sendConvertingCancelled();
+  }, []);
+
   // エラー dismiss
   const handleDismissError = useCallback(() => {
     window.electronAPI.sendErrorDismissed();
@@ -152,6 +198,14 @@ export function RecordingOverlay() {
 
     case "transcribing":
       return <TranscribingOverlay onCancel={handleTranscribingCancel} />;
+
+    case "converting":
+      return (
+        <ConvertingOverlay
+          rawText={rawText ?? ""}
+          onCancel={handleConvertingCancel}
+        />
+      );
 
     case "error":
       return (

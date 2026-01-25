@@ -225,7 +225,7 @@ export async function transcribe(
 
   try {
     const openai = getOpenAI();
-    const { whisperModel } = getSettings();
+    const { transcriptionModel } = getSettings();
 
     const buffer = Buffer.from(audioData);
     const file = new File([buffer], "recording.webm", { type: "audio/webm" });
@@ -234,7 +234,7 @@ export async function transcribe(
     const transcription = await openai.audio.transcriptions.create(
       {
         file,
-        model: whisperModel,
+        model: transcriptionModel,
         language: "ja",
       },
       { signal },

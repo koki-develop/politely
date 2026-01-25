@@ -8,8 +8,8 @@ import {
   POLITENESS_LEVEL_LABELS,
   POLITENESS_LEVELS,
   type PolitenessLevel,
-  WHISPER_MODELS,
-  type WhisperModel,
+  TRANSCRIPTION_MODELS,
+  type TranscriptionModel,
 } from "../settings/schema";
 import { cn } from "../utils/cn";
 import { ApiKeyInput } from "./ApiKeyInput";
@@ -47,17 +47,20 @@ export const SettingsApp = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleWhisperModelChange = useCallback(async (model: WhisperModel) => {
-    setModelError(null);
-    const result = await window.settingsAPI.updateSettings({
-      whisperModel: model,
-    });
-    if (result.success) {
-      setSettings(result.settings);
-    } else {
-      setModelError(result.error);
-    }
-  }, []);
+  const handleTranscriptionModelChange = useCallback(
+    async (model: TranscriptionModel) => {
+      setModelError(null);
+      const result = await window.settingsAPI.updateSettings({
+        transcriptionModel: model,
+      });
+      if (result.success) {
+        setSettings(result.settings);
+      } else {
+        setModelError(result.error);
+      }
+    },
+    [],
+  );
 
   const handleGptModelChange = useCallback(async (model: GptModel) => {
     setModelError(null);
@@ -190,14 +193,14 @@ export const SettingsApp = () => {
 
         {/* Settings sections */}
         <div className="space-y-5">
-          {/* Whisper Model */}
+          {/* Transcription Model */}
           <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
             <ModelSelector
               label="音声認識"
               description="音声の文字起こしに使用するモデル"
-              value={settings.whisperModel}
-              options={WHISPER_MODELS}
-              onChange={handleWhisperModelChange}
+              value={settings.transcriptionModel}
+              options={TRANSCRIPTION_MODELS}
+              onChange={handleTranscriptionModelChange}
             />
           </div>
 

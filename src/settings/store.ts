@@ -10,9 +10,9 @@ const schema = {
   apiKey: {
     type: "string" as const,
   },
-  whisperModel: {
+  transcriptionModel: {
     type: "string" as const,
-    default: DEFAULT_SETTINGS.whisperModel,
+    default: DEFAULT_SETTINGS.transcriptionModel,
   },
   gptModel: {
     type: "string" as const,
@@ -55,7 +55,7 @@ export function getSettings(): AppSettings {
   const s = getSettingsStore();
   const raw = {
     apiKey: s.get("apiKey"),
-    whisperModel: s.get("whisperModel"),
+    transcriptionModel: s.get("transcriptionModel"),
     gptModel: s.get("gptModel"),
     politenessLevel: s.get("politenessLevel"),
     showWindowOnIdle: s.get("showWindowOnIdle"),
@@ -94,8 +94,8 @@ export function updateSettings(
       s.delete("apiKey");
     }
   }
-  if (validated.whisperModel !== undefined) {
-    s.set("whisperModel", validated.whisperModel);
+  if (validated.transcriptionModel !== undefined) {
+    s.set("transcriptionModel", validated.transcriptionModel);
   }
   if (validated.gptModel !== undefined) {
     s.set("gptModel", validated.gptModel);

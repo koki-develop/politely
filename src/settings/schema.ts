@@ -1,9 +1,13 @@
 import { z } from "zod";
 
-// Whisper モデル選択肢
-export const WHISPER_MODELS = ["whisper-1"] as const;
-const WhisperModelSchema = z.enum(WHISPER_MODELS);
-export type WhisperModel = z.infer<typeof WhisperModelSchema>;
+// 文字起こしモデル選択肢
+export const TRANSCRIPTION_MODELS = [
+  "gpt-4o-transcribe",
+  "gpt-4o-mini-transcribe",
+  "whisper-1",
+] as const;
+const TranscriptionModelSchema = z.enum(TRANSCRIPTION_MODELS);
+export type TranscriptionModel = z.infer<typeof TranscriptionModelSchema>;
 
 // GPT モデル選択肢（gpt-5 系 / gpt-4.1 系）
 export const GPT_MODELS = [
@@ -45,7 +49,7 @@ export const DEFAULT_SHORTCUT = "Command+Shift+Space";
 // 設定スキーマ
 export const AppSettingsSchema = z.object({
   apiKey: z.string().optional(),
-  whisperModel: WhisperModelSchema,
+  transcriptionModel: TranscriptionModelSchema,
   gptModel: GptModelSchema,
   politenessLevel: PolitenessLevelSchema,
   showWindowOnIdle: z.boolean(),
@@ -57,7 +61,7 @@ export type AppSettings = z.infer<typeof AppSettingsSchema>;
 // デフォルト設定
 export const DEFAULT_SETTINGS: AppSettings = {
   apiKey: undefined,
-  whisperModel: "whisper-1",
+  transcriptionModel: "whisper-1",
   gptModel: "gpt-4.1-mini",
   politenessLevel: "medium",
   showWindowOnIdle: true,

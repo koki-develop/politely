@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0](https://github.com/koki-develop/politely/compare/v0.1.2...v0.2.0) (2026-01-25)
+
+
+### Features
+
+* add converting state to display raw text during polite conversion ([9072f47](https://github.com/koki-develop/politely/commit/9072f471b55e3a74145a13075614b44cb7b64445))
+* add gpt-4o-transcribe and gpt-4o-mini-transcribe models ([4e091c8](https://github.com/koki-develop/politely/commit/4e091c8648f37136a57da0774753c904f56bdc5e))
+* add launch at login setting ([7975666](https://github.com/koki-develop/politely/commit/7975666712a410d9ebc5141e7fb250c013efaf30))
+
 ## [0.1.2](https://github.com/koki-develop/politely/compare/v0.1.1...v0.1.2) (2026-01-24)
 
 

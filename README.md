@@ -28,6 +28,25 @@
 $ brew install --cask koki-develop/tap/politely
 ```
 
+## サポートされているモデル
+
+### 文字起こし
+
+- `gpt-4o-transcribe`
+- `gpt-4o-mini-transcribe`
+- `whisper-1`
+
+### 丁寧語変換
+
+- `gpt-5.2`
+- `gpt-5.1`
+- `gpt-5`
+- `gpt-5-mini`
+- `gpt-5-nano`
+- `gpt-4.1`
+- `gpt-4.1-mini`
+- `gpt-4.1-nano`
+
 ## ライセンス
 
 [MIT](./LICENSE)

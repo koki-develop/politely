@@ -25,7 +25,7 @@ export function ConvertingOverlay({ rawText, onCancel }: Props): JSX.Element {
       {/* テキスト表示 */}
       <div className="flex items-center justify-center gap-2 h-4 px-3">
         <SpinnerRing />
-        <span className="truncate max-w-[200px] text-white/80 text-[10px]">
+        <span className="truncate max-w-[90px] text-white/80 text-[10px]">
           {rawText}
         </span>
       </div>

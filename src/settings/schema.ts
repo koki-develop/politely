@@ -54,6 +54,7 @@ export const AppSettingsSchema = z.object({
   politenessLevel: PolitenessLevelSchema,
   showWindowOnIdle: z.boolean(),
   showDockIcon: z.boolean(),
+  launchAtLogin: z.boolean(),
   globalShortcut: z.string(),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -66,6 +67,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   politenessLevel: "medium",
   showWindowOnIdle: true,
   showDockIcon: true,
+  launchAtLogin: false,
   globalShortcut: DEFAULT_SHORTCUT,
 };
 

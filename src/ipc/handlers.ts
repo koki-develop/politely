@@ -167,6 +167,7 @@ export function setupSettingsHandlers(
   setDockVisibility: (
     visible: boolean,
   ) => Promise<{ success: boolean; error?: string }>,
+  setLaunchAtLogin: (enabled: boolean) => { success: boolean; error?: string },
 ): void {
   // 設定画面を開く
   ipcMain.on(IPC_RENDERER_TO_MAIN.OPEN_SETTINGS, openSettingsWindow);
@@ -253,6 +254,23 @@ export function setupSettingsHandlers(
           return {
             success: false,
             error: dockResult.error ?? "Dock の表示切替に失敗しました",
+            settings: oldSettings,
+          };
+        }
+      }
+
+      // launchAtLogin 変更時の処理
+      if (
+        "launchAtLogin" in newSettings &&
+        newSettings.launchAtLogin !== undefined &&
+        newSettings.launchAtLogin !== oldSettings.launchAtLogin
+      ) {
+        const launchResult = setLaunchAtLogin(newSettings.launchAtLogin);
+        if (!launchResult.success) {
+          return {
+            success: false,
+            error:
+              launchResult.error ?? "ログイン時の自動起動設定に失敗しました",
             settings: oldSettings,
           };
         }

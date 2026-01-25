@@ -30,6 +30,10 @@ const schema = {
     type: "boolean" as const,
     default: DEFAULT_SETTINGS.showDockIcon,
   },
+  launchAtLogin: {
+    type: "boolean" as const,
+    default: DEFAULT_SETTINGS.launchAtLogin,
+  },
   globalShortcut: {
     type: "string" as const,
     default: DEFAULT_SETTINGS.globalShortcut,
@@ -60,6 +64,7 @@ export function getSettings(): AppSettings {
     politenessLevel: s.get("politenessLevel"),
     showWindowOnIdle: s.get("showWindowOnIdle"),
     showDockIcon: s.get("showDockIcon"),
+    launchAtLogin: s.get("launchAtLogin"),
     globalShortcut: s.get("globalShortcut"),
   };
 
@@ -108,6 +113,9 @@ export function updateSettings(
   }
   if (validated.showDockIcon !== undefined) {
     s.set("showDockIcon", validated.showDockIcon);
+  }
+  if (validated.launchAtLogin !== undefined) {
+    s.set("launchAtLogin", validated.launchAtLogin);
   }
   if (validated.globalShortcut !== undefined) {
     s.set("globalShortcut", validated.globalShortcut);

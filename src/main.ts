@@ -27,7 +27,7 @@ import {
   createOnboardingWindow,
   destroyOnboardingWindow,
 } from "./onboardingWindow";
-import { getSettings } from "./settings/store";
+import { getSettings, updateSettings } from "./settings/store";
 import { createSettingsWindow, destroySettingsWindow } from "./settingsWindow";
 import { createShortcutHandler } from "./shortcut/handler";
 import { appStateManager } from "./state/appState";
@@ -101,6 +101,43 @@ async function setDockVisibility(
 }
 
 /**
+ * ログイン時の自動起動を設定する
+ */
+function setLaunchAtLogin(enabled: boolean): {
+  success: boolean;
+  error?: string;
+} {
+  try {
+    app.setLoginItemSettings({
+      openAtLogin: enabled,
+    });
+
+    // 設定が適用されたか確認
+    const settings = app.getLoginItemSettings();
+    if (settings.openAtLogin !== enabled) {
+      // macOS 13+ では承認が必要な場合がある
+      if (settings.status === "requires-approval") {
+        return {
+          success: false,
+          error: "ログイン項目の設定にはシステム設定での承認が必要です",
+        };
+      }
+      return {
+        success: false,
+        error: "ログイン時の自動起動設定に失敗しました",
+      };
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("[Main] Failed to set launch at login:", error);
+    return {
+      success: false,
+      error: "ログイン時の自動起動設定に失敗しました",
+    };
+  }
+}
+
+/**
  * IPC ハンドラのセットアップ
  */
 function setupIpcHandlers() {
@@ -121,6 +158,7 @@ function setupIpcHandlers() {
     initializeOpenAI,
     resetOpenAI,
     setDockVisibility,
+    setLaunchAtLogin,
   );
 
   setupPermissionsHandlers(ipcMain);
@@ -189,6 +227,17 @@ app.on("ready", async () => {
       console.error("[Main] Failed to show dock icon on startup:", error);
     }
   }
+
+  // ログイン項目の状態を同期
+  // ユーザーがシステム設定から変更した場合に設定を同期する
+  const loginItemSettings = app.getLoginItemSettings();
+  if (loginItemSettings.openAtLogin !== settings.launchAtLogin) {
+    console.log(
+      `[Main] Syncing login item settings: system=${loginItemSettings.openAtLogin}, stored=${settings.launchAtLogin}`,
+    );
+    updateSettings({ launchAtLogin: loginItemSettings.openAtLogin });
+  }
+
   if (settings.apiKey) {
     initializeOpenAI(settings.apiKey);
   }

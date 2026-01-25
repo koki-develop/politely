@@ -121,6 +121,18 @@ export const SettingsApp = () => {
     }
   }, []);
 
+  const handleLaunchAtLoginChange = useCallback(async (checked: boolean) => {
+    setAppearanceError(null);
+    const result = await window.settingsAPI.updateSettings({
+      launchAtLogin: checked,
+    });
+    if (result.success) {
+      setSettings(result.settings);
+    } else {
+      setAppearanceError(result.error);
+    }
+  }, []);
+
   const handleShortcutChange = useCallback(async (shortcut: string) => {
     setShortcutError(null);
     const result = await window.settingsAPI.updateSettings({
@@ -256,6 +268,14 @@ export const SettingsApp = () => {
               description="Dock にアプリケーションアイコンを表示します"
               checked={settings.showDockIcon}
               onChange={handleShowDockIconChange}
+            />
+          </div>
+          <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-800/50">
+            <ToggleSwitch
+              label="ログイン時に起動"
+              description="Mac にログインしたときに自動で起動します"
+              checked={settings.launchAtLogin}
+              onChange={handleLaunchAtLoginChange}
             />
           </div>
           {appearanceError && (

@@ -15,7 +15,7 @@ Politely は Electron + React + TypeScript で構築された macOS 向けトレ
 - **Build Tool**: Vite 6
 - **Package Manager**: Bun
 - **Linter/Formatter**: Biome
-- **Speech-to-Text**: OpenAI Whisper API
+- **Speech-to-Text**: OpenAI Transcription API (gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1)
 - **Icons**: @tabler/icons-react
 
 ## Commands
@@ -183,7 +183,7 @@ src/
 
 1. グローバルショートカット（デフォルト `Cmd+Shift+Space`）→ フローティングウィンドウ表示 → 録音開始
 2. 再度グローバルショートカット → 録音停止
-3. 音声を IPC 経由で Main Process に送信、Whisper API で文字起こし + GPT で丁寧語変換
+3. 音声を IPC 経由で Main Process に送信、Transcription API で文字起こし + GPT で丁寧語変換
 4. 文字起こし結果をクリップボードに書き込み
 5. koffi + Core Graphics API で `Cmd+V` をシミュレート（フローティングウィンドウは `focusable: false` のため、元のアプリがフォアグラウンドのまま）
 

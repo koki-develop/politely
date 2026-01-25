@@ -79,6 +79,7 @@ src/
 ├── floatingWindow.ts    # フローティングウィンドウ管理
 ├── settingsWindow.ts    # 設定ウィンドウ管理
 ├── onboardingWindow.ts  # オンボーディングウィンドウ管理
+├── trayMenu.ts          # トレイメニュー管理
 ├── globalShortcut.ts    # グローバルショートカット管理
 ├── pasteService.ts      # クリップボード + ペースト処理
 ├── native/              # ネイティブモジュール（koffi）
@@ -202,7 +203,7 @@ src/
 
 - **アクセシビリティ権限**: Core Graphics API でキー入力をシミュレートするために必要
 - **マイク権限**: 音声録音に必要
-- Dock アイコンは `app.dock.hide()` で非表示にしている
+- Dock アイコンは設定で表示/非表示を切り替え可能（`showDockIcon` 設定）
 - **macOS 専用**: このアプリは macOS 専用のため、`process.platform === "darwin"` チェックは不要
 
 ### macOS 権限チェック

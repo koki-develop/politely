@@ -62,7 +62,7 @@ export type AppSettings = z.infer<typeof AppSettingsSchema>;
 // デフォルト設定
 export const DEFAULT_SETTINGS: AppSettings = {
   apiKey: undefined,
-  transcriptionModel: "whisper-1",
+  transcriptionModel: "gpt-4o-transcribe",
   gptModel: "gpt-4.1-mini",
   politenessLevel: "medium",
   showWindowOnIdle: true,

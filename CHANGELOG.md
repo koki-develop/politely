@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/koki-develop/politely/compare/v0.2.2...v0.2.3) (2026-01-26)
+
+
+### Bug Fixes
+
+* add designated requirement to codesign for TCC permission persistence ([df6de0d](https://github.com/koki-develop/politely/commit/df6de0d26f02d505f6bebd4414b7a04905a063a3))
+
 ## [0.2.2](https://github.com/koki-develop/politely/compare/v0.2.1...v0.2.2) (2026-01-26)
 
 

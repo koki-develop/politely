@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/koki-develop/politely/compare/v0.2.1...v0.2.2) (2026-01-26)
+
+
+### Bug Fixes
+
+* clarify role description in politeness conversion prompts ([93bb5f2](https://github.com/koki-develop/politely/commit/93bb5f28456217c1f4ab8960e538bf8f8294e447))
+
 ## [0.2.1](https://github.com/koki-develop/politely/compare/v0.2.0...v0.2.1) (2026-01-26)
 
 

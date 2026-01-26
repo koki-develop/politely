@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/koki-develop/politely/compare/v0.2.0...v0.2.1) (2026-01-26)
+
+
+### Bug Fixes
+
+* change default transcription model to gpt-4o-transcribe ([d869b35](https://github.com/koki-develop/politely/commit/d869b3540cac94e6a8b9cf27c9d62b05b0569ba0))
+
 ## [0.2.0](https://github.com/koki-develop/politely/compare/v0.1.2...v0.2.0) (2026-01-25)
 
 

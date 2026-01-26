@@ -33,8 +33,17 @@ function buildCaskContent(
          intel: "${sha256Intel}"
 
   preflight do
+    # ad-hoc 署名で designated requirement を identifier のみに設定
+    # これにより、ビルドが変わっても TCC が同じアプリとして認識する
     system_command "/usr/bin/codesign",
-                   args: ["--force", "--deep", "--sign", "-", "#{staged_path}/Politely.app"]
+                   args: [
+                     "--force",
+                     "--deep",
+                     "--sign", "-",
+                     "--identifier", "me.koki.politely",
+                     "-r=designated => identifier \\"me.koki.politely\\"",
+                     "#{staged_path}/Politely.app",
+                   ]
     system_command "/usr/bin/xattr",
                    args: ["-dr", "com.apple.quarantine", "#{staged_path}/Politely.app"]
   end

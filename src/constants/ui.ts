@@ -15,7 +15,7 @@ export const WINDOW_SIZES = {
  * フローティングウィンドウの設定
  */
 export const FLOATING_WINDOW = {
-  BOTTOM_MARGIN: -16,
+  BOTTOM_MARGIN: 16,
   DEFAULT_WIDTH: 130,
   DEFAULT_HEIGHT: 32,
 } as const;

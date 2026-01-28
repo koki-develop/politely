@@ -6,20 +6,28 @@ import type { AppState } from "./state/appState";
 
 let floatingWindow: BrowserWindow | null = null;
 
+function getActiveDisplayWorkArea(): Electron.Rectangle {
+  return screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
+}
+
 export function createFloatingWindow(preloadPath: string): BrowserWindow {
   if (floatingWindow && !floatingWindow.isDestroyed()) {
     return floatingWindow;
   }
 
-  const { width: screenWidth, height: screenHeight } =
-    screen.getPrimaryDisplay().workAreaSize;
+  const {
+    x: displayX,
+    y: displayY,
+    width: screenWidth,
+    height: screenHeight,
+  } = getActiveDisplayWorkArea();
 
   const windowWidth = FLOATING_WINDOW.DEFAULT_WIDTH;
   const windowHeight = FLOATING_WINDOW.DEFAULT_HEIGHT;
   const bottomMargin = FLOATING_WINDOW.BOTTOM_MARGIN;
 
-  const x = Math.floor((screenWidth - windowWidth) / 2);
-  const y = screenHeight - windowHeight - bottomMargin;
+  const x = displayX + Math.floor((screenWidth - windowWidth) / 2);
+  const y = displayY + screenHeight - windowHeight - bottomMargin;
 
   floatingWindow = new BrowserWindow({
     width: windowWidth,
@@ -79,10 +87,14 @@ export function hideFloatingWindow(): void {
 export function resizeFloatingWindow(width: number, height: number): void {
   if (!floatingWindow) return;
 
-  const { width: screenWidth, height: screenHeight } =
-    screen.getPrimaryDisplay().workAreaSize;
-  const x = Math.floor((screenWidth - width) / 2);
-  const y = screenHeight - height - FLOATING_WINDOW.BOTTOM_MARGIN;
+  const {
+    x: displayX,
+    y: displayY,
+    width: screenWidth,
+    height: screenHeight,
+  } = getActiveDisplayWorkArea();
+  const x = displayX + Math.floor((screenWidth - width) / 2);
+  const y = displayY + screenHeight - height - FLOATING_WINDOW.BOTTOM_MARGIN;
 
   floatingWindow.setBounds({ x, y, width, height });
 }
@@ -90,10 +102,14 @@ export function resizeFloatingWindow(width: number, height: number): void {
 export function centerFloatingWindow(width: number, height: number): void {
   if (!floatingWindow) return;
 
-  const { width: screenWidth, height: screenHeight } =
-    screen.getPrimaryDisplay().workAreaSize;
-  const x = Math.floor((screenWidth - width) / 2);
-  const y = Math.floor((screenHeight - height) / 2);
+  const {
+    x: displayX,
+    y: displayY,
+    width: screenWidth,
+    height: screenHeight,
+  } = getActiveDisplayWorkArea();
+  const x = displayX + Math.floor((screenWidth - width) / 2);
+  const y = displayY + Math.floor((screenHeight - height) / 2);
 
   floatingWindow.setBounds({ x, y, width, height });
 }

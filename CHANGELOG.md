@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/koki-develop/politely/compare/v0.2.3...v0.3.0) (2026-01-28)
+
+
+### Features
+
+* add "off" option to politeness level to skip polite text conversion ([cab5901](https://github.com/koki-develop/politely/commit/cab59012ff63823c58e985f34648e890f32b7610))
+
+
+### Bug Fixes
+
+* display floating window on active monitor instead of primary display ([6a0923b](https://github.com/koki-develop/politely/commit/6a0923b9fc1e3f97160bc6ccc63f0a3b6cb74c70))
+
 ## [0.2.3](https://github.com/koki-develop/politely/compare/v0.2.2...v0.2.3) (2026-01-26)
 
 

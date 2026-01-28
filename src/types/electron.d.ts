@@ -60,6 +60,7 @@ export interface ElectronAPI {
   openMicrophoneSettings: () => void;
 
   // Invoke (async with response)
+  getSettings: () => Promise<AppSettings>;
   transcribeAudio: (audioData: ArrayBuffer) => Promise<TranscribeAudioResult>;
   convertToPolite: (text: string) => Promise<ConvertToPoliteResult>;
 

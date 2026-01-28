@@ -88,6 +88,13 @@ export function RecordingOverlay() {
         return;
       }
 
+      // 丁寧度が「オフ」の場合は変換をスキップ
+      const settings = await window.electronAPI.getSettings();
+      if (settings.politenessLevel === "off") {
+        window.electronAPI.sendTranscriptionComplete(rawText);
+        return;
+      }
+
       // 状態を converting に遷移（生テキストを通知）
       window.electronAPI.sendTranscriptionProgress(rawText);
 

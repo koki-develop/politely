@@ -41,7 +41,7 @@ const PoliteTextSchema = z.object({
 
 // 丁寧さレベルごとのベースメッセージ
 const POLITENESS_BASE_MESSAGES: Record<
-  PolitenessLevel,
+  Exclude<PolitenessLevel, "off">,
   ChatCompletionMessageParam[]
 > = {
   // 弱
@@ -219,6 +219,9 @@ const convertToPoliteInternal = async (
 ): Promise<string> => {
   const openai = getOpenAI();
   const { gptModel, politenessLevel } = getSettings();
+  if (politenessLevel === "off") {
+    return text;
+  }
   const baseMessages = POLITENESS_BASE_MESSAGES[politenessLevel];
   const completion = await openai.chat.completions.parse(
     {

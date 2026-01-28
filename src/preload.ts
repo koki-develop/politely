@@ -70,6 +70,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.send(IPC_RENDERER_TO_MAIN.OPEN_MICROPHONE_SETTINGS);
   },
 
+  getSettings: () => {
+    return ipcRenderer.invoke(IPC_INVOKE.GET_SETTINGS);
+  },
   transcribeAudio: (audioData: ArrayBuffer): Promise<TranscribeAudioResult> => {
     return ipcRenderer.invoke(IPC_INVOKE.TRANSCRIBE_AUDIO, audioData);
   },

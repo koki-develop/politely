@@ -185,7 +185,7 @@ src/
 
 1. グローバルショートカット（デフォルト `Cmd+Shift+Space`）→ フローティングウィンドウ表示 → 録音開始
 2. 再度グローバルショートカット → 録音停止
-3. 音声を IPC 経由で Main Process に送信、Transcription API で文字起こし + GPT で丁寧語変換
+3. 音声を IPC 経由で Main Process に送信、Transcription API で文字起こし + GPT で丁寧語変換（丁寧度が「オフ」の場合は変換をスキップ）
 4. 文字起こし結果をクリップボードに書き込み
 5. koffi + Core Graphics API で `Cmd+V` をシミュレート（フローティングウィンドウは `focusable: false` のため、元のアプリがフォアグラウンドのまま）
 

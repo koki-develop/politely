@@ -27,6 +27,7 @@ export type GptModel = z.infer<typeof GptModelSchema>;
 
 // 丁寧さレベル選択肢
 export const POLITENESS_LEVELS = [
+  "off",
   "weak",
   "medium",
   "strong",
@@ -37,6 +38,7 @@ export type PolitenessLevel = z.infer<typeof PolitenessLevelSchema>;
 
 // 丁寧さレベルの表示名
 export const POLITENESS_LEVEL_LABELS: Record<PolitenessLevel, string> = {
+  off: "オフ",
   weak: "弱",
   medium: "中",
   strong: "強",

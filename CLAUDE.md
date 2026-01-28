@@ -48,7 +48,8 @@ bun run make
 
 - **Tray Icon**: メニューバーにアイコンを表示、右クリックで終了メニュー
 - **Floating Window**: オーバーレイウィンドウ（focusable: false）
-  - 画面下部に配置（中央ではない）
+  - カーソルがあるディスプレイの画面下部に配置（マルチモニター対応）
+  - `getActiveDisplayWorkArea()` でアクティブディスプレイの作業領域を取得し、座標計算時に `workArea` のオフセット（`x`, `y`）を加算する
   - Idle状態でも常時表示し、録音開始ですぐ使える状態を維持
   - `resizeFloatingWindow()` で状態に応じた動的サイズ変更が可能
   - 全画面アプリの上に表示するため `setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })` と `setAlwaysOnTop(true, "screen-saver")` を設定

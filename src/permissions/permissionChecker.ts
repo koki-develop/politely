@@ -9,7 +9,7 @@ import {
 /**
  * 権限チェックの結果
  */
-export type PermissionCheckResult =
+type PermissionCheckResult =
   | { success: true }
   | { success: false; error: AppError };
 

@@ -33,7 +33,7 @@ export const POLITENESS_LEVELS = [
   "strong",
   "strongest",
 ] as const;
-export const PolitenessLevelSchema = z.enum(POLITENESS_LEVELS);
+const PolitenessLevelSchema = z.enum(POLITENESS_LEVELS);
 export type PolitenessLevel = z.infer<typeof PolitenessLevelSchema>;
 
 // 丁寧さレベルの表示名

@@ -64,7 +64,7 @@ function openSettingsWindow() {
  * Re-register global shortcut from current settings.
  * Used when exiting shortcut capture mode or when settings window closes.
  */
-export function reregisterGlobalShortcut() {
+function reregisterGlobalShortcut() {
   const settings = getSettings();
   registerGlobalShortcut(settings.globalShortcut, handleShortcutPress);
   // ショートカット表示を更新
